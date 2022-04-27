@@ -1,4 +1,4 @@
-require("split")
+require('split')
 local s = require('symbol')
 
 local tags = [[
