@@ -1,27 +1,33 @@
 local symbol = require('symbol')
 
 local tags = {
-	consts = {},
-	vars = {},
-	functions = {},
-	currentFileStructs = {},
-	currentFileMethods = {},
+	consts                 = {},
+	vars                   = {},
+	functions              = {},
+	currentFileStructs     = {},
+	currentFileMethods     = {},
 	currentFileLeftMethods = {},
-	othersFileStructs = {},
-	othersFileMethods = {},
+	othersFileStructs      = {},
+	othersFileMethods      = {},
+	current_buff_name      = "",
+	current_buff_fullname  = ""
 }
 
-function tags.run(buf, window)
-	tags.buf = buf
-	tags.window = window
-	tags.generate(tags.get_current_buf_path())
+function tags.run(buff, bufs, windows)
+	print(buff)
+	tags.buff = buff
+	tags.bufs = bufs
+	tags.windows = windows
+	local file_path = tags.get_current_buff_path()
+	tags.generate(file_path)
+
+	tags.current_buff_name = string.sub(tags.current_buff_fullname, #file_path + 2)
+	print(tags.current_buff_name, tags.current_buff_fullname)
 end
 
-function tags.get_current_buf_path()
-	return "/Users/crusj/Project/admin-go/server"
-
-	-- local fullname = vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf())
-	-- return (string.gsub(fullname, "/[^/]+$", ""))
+function tags.get_current_buff_path()
+	tags.current_buff_fullname = vim.api.nvim_buf_get_name(tonumber(tags.buff))
+	return (string.gsub(tags.current_buff_fullname, "/[^/]+$", ""))
 end
 
 -- generate tags use gotags.
@@ -38,7 +44,6 @@ function tags.generate(path)
 				if line == "" or string.sub(line, 1, 1) == "!" then
 					goto continue
 				end
-				print(index,line)
 				tags:group(symbol.New(line))
 				::continue::
 			end
@@ -54,7 +59,7 @@ end
 
 -- group each tag line.
 function tags:group(cut)
-	if cut.filename == self.bufname then
+	if cut.filename == self.current_buff_fullname then
 		if cut.kind == "const" then
 			self.consts[#self.consts + 1] = cut
 		elseif cut.kind == "variable" then
@@ -87,7 +92,8 @@ end
 
 function tags:flushConstToWindow()
 	for index, cut in ipairs(self.consts) do
-		vim.api.nvim_buf_set_text(tags.buf, index, 0, -1, -1, { cut.name })
+		print(tonumber(tags.bufs), cut.name, index, #cut.name)
+		vim.api.nvim_buf_set_lines(tonumber(tags.bufs), index - 1, -1, 0,{ cut.name })
 	end
 end
 
