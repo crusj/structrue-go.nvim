@@ -1,28 +1,48 @@
+require('highlight')
 local tags = require("tags")
-local sg = {}
+local sg = {
+	buff = nil,
+	bufs = nil,
+	windows = nil,
+}
 -- create window
 function sg.create_window()
 	vim.cmd('botright vs')
 end
 
-function sg.setup_view()
-	local buff = vim.api.nvim_get_current_buf()
-	-- create window
+-- open
+function sg.open()
+	sg.buff = vim.api.nvim_get_current_buf()
+
 	sg.create_window()
+	sg.windows = vim.api.nvim_get_current_win()
 
-	local bufs = vim.api.nvim_create_buf(false, true)
-	local windows = vim.api.nvim_get_current_win()
-	vim.api.nvim_win_set_buf(windows, bufs)
+	if sg.bufs == nil then
+		sg.bufs = vim.api.nvim_create_buf(false, true)
 
-	vim.api.nvim_buf_set_name(bufs, 'structure')
-	vim.api.nvim_buf_set_option(bufs, 'filetype', 'structure')
+		vim.api.nvim_buf_set_name(sg.bufs, 'structure')
+		vim.api.nvim_buf_set_option(sg.bufs, 'filetype', 'structure')
+		vim.api.nvim_win_set_buf(sg.windows, sg.bufs)
+	else
+		vim.api.nvim_win_set_buf(sg.windows, sg.bufs)
+	end
 
-	return buff, bufs, windows
+	tags.run(sg.buff,sg.bufs,sg.windows)
 end
 
-function sg.run()
-	local buff, bufs, windows = sg.setup_view()
-	tags.run(buff, bufs, window)
+-- close
+function sg.close()
+	vim.api.nvim_win_close(sg.windows, true)
+	sg.windows = nil
+end
+
+-- toggle
+function sg.toggle()
+	if sg.windows ~= nil then
+		sg.close()
+	else
+		sg.open()
+	end
 end
 
 return sg
