@@ -49,12 +49,17 @@ end
 
 function sg.key_binds()
 	vim.api.nvim_buf_set_keymap(sg.bufs, "n", "<cr>", ":lua require'structure-go'.jump()<cr>", {})
+	vim.api.nvim_buf_set_keymap(sg.bufs, "n", "H", ":lua require'structure-go'.hide_others_methods_toggle()<cr>", {})
 end
 
 -- jump from symbols
 function sg.jump()
 	local line = vim.api.nvim_exec("echo line('.')", true)
 	tags.jump(tonumber(line))
+end
+
+function sg.hide_others_methods_toggle()
+	tags.hide_others_methods_toggle()
 end
 
 return sg

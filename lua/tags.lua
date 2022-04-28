@@ -4,18 +4,18 @@ local tags = {}
 
 -- init tags.
 function tags.init()
-	tags.consts                 = {}
-	tags.vars                   = {}
-	tags.functions              = {}
-	tags.currentFileStructs     = {}
-	tags.currentFileMethods     = {}
-	tags.currentFileLeftMethods = {}
-	tags.othersFileStructs      = {}
-	tags.othersFileMethods      = {}
-	tags.current_buff_name      = ""
-	tags.current_buff_fullname  = ""
-
-	tags.lines = { names = {}, lines = {}, icons = {}, fullnames = {} }
+	tags.consts                    = {}
+	tags.vars                      = {}
+	tags.functions                 = {}
+	tags.currentFileStructs        = {}
+	tags.currentFileMethods        = {}
+	tags.currentFileLeftMethods    = {}
+	tags.othersFileStructs         = {}
+	tags.othersFileMethods         = {}
+	tags.current_buff_name         = ""
+	tags.current_buff_fullname     = ""
+	tags.lines                     = { names = {}, lines = {}, icons = {}, fullnames = {} }
+	tags.hide_others_method_status = false
 end
 
 -- run tags parse and write to bufs
@@ -64,11 +64,6 @@ end
 -- check gotags is exists.
 function tags.check_bin()
 	return os.execute("which gotags") == 0
-end
-
-function tags.refresh()
-	tags.init()
-
 end
 
 -- group each tag line.
@@ -188,6 +183,10 @@ function tags.flushCurrentFileStructAndAllMethodsToWindow()
 			end
 		end
 
+		if tags.hide_others_method_status then
+			goto continue
+		end
+
 		for _, mcut in ipairs(tags.othersFileMethods) do
 			if mcut.ctype == scut.name then
 				tags.lines.names[#tags.lines.names + 1] = "\t" .. mcut.name .. mcut.signature
@@ -196,6 +195,7 @@ function tags.flushCurrentFileStructAndAllMethodsToWindow()
 				tags.lines.lines[#tags.lines.lines + 1] = mcut.line
 			end
 		end
+		::continue::
 	end
 end
 
@@ -234,9 +234,11 @@ function tags.flushCurrentFileMethodsAndStructToWindow()
 		end
 
 		-- find not in current file's struct's methods
-		for _, cut in ipairs(tags.othersFileMethods) do
-			if cut.ctype == sname then
-				methods[#methods + 1] = cut
+		if not tags.hide_others_method_status then
+			for _, cut in ipairs(tags.othersFileMethods) do
+				if cut.ctype == sname then
+					methods[#methods + 1] = cut
+				end
 			end
 		end
 
@@ -267,6 +269,26 @@ function tags.jump(line)
 			vim.cmd("execute  \"normal! zz\"")
 		end
 	end
+end
+
+function tags.hide_others_methods_toggle()
+	tags.lines = { names = {}, lines = {}, icons = {}, fullnames = {} }
+	if tags.hide_others_method_status then
+		tags.show_others_methods()
+	else
+		tags.hide_others_methods()
+	end
+
+end
+
+function tags.show_others_methods()
+	tags.hide_others_method_status = false
+	tags.flushToWindow()
+end
+
+function tags.hide_others_methods()
+	tags.hide_others_method_status = true
+	tags.flushToWindow()
 end
 
 return tags
