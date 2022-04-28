@@ -1,13 +1,13 @@
 -- symbol parser
 local S = {
 	SymbolKind = {
-		i = "interface",
-		m = "method",
-		f = "function",
-		w = "field",
-		c = "const",
-		t = "type",
-		v = "variable"
+		i = {"interface","❙ "},
+		m = {"method","◨ "},
+		f = {"function","◧ "},
+		w = {"field","▪ "},
+		c = {"const","π "},
+		t = {"type",{"▱ ","❏ "}},
+		v = {"variable","◈ "}
 	}
 }
 
@@ -21,7 +21,7 @@ function S.New(tagline)
 		if #sp == 2 then
 			cuts[sp[1]] = sp[2]
 		else
-			table.insert(cuts,cut)
+			table.insert(cuts, cut)
 		end
 	end
 
@@ -29,7 +29,7 @@ function S.New(tagline)
 		name = cuts[1],
 		filename = cuts[2],
 		line = cuts["line"],
-		kind = S.SymbolKind[cuts[4]],
+		kind = S.SymbolKind[cuts[4]][1],
 		access = cuts["access"] or "public",
 		signature = cuts["signature"] or "",
 		ctype = cuts["ctype"],
