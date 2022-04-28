@@ -14,18 +14,17 @@ function tags.init()
 	tags.othersFileMethods      = {}
 	tags.current_buff_name      = ""
 	tags.current_buff_fullname  = ""
-	tags.highlight_lines        = {}
 
-	tags.next_line_start = 0
-
+	tags.lines = { names = {}, lines = {}, icons = {}, fullnames = {} }
 end
 
 -- run tags parse and write to bufs
-function tags.run(buff, bufs, windows)
+function tags.run(buff, bufs, windowf, windows)
 	tags.init()
 
 	tags.buff = buff
 	tags.bufs = bufs
+	tags.windowf = windowf
 	tags.windows = windows
 	local file_path = tags.get_current_buff_path()
 	tags.generate(file_path)
@@ -67,6 +66,11 @@ function tags.check_bin()
 	return os.execute("which gotags") == 0
 end
 
+function tags.refresh()
+	tags.init()
+
+end
+
 -- group each tag line.
 function tags:group(cut)
 	if cut.filename == self.current_buff_fullname then
@@ -81,7 +85,6 @@ function tags:group(cut)
 		elseif cut.kind == "method" then
 			self.currentFileMethods[#self.currentFileMethods + 1] = cut
 		end
-		print(cut.kind)
 	else
 		if cut.kind == "type" and cut.type == "struct" then
 			self.othersFileStructs[#self.othersFileStructs + 1] = cut
@@ -104,91 +107,94 @@ function tags.flushToWindow()
 	-- flush method and struct
 	tags.flushCurrentFileMethodsAndStructToWindow()
 
-	tags.highlight()
+	tags.set_symbols_to_buf()
+	tags.highlight_extra()
 end
 
-function tags.highlight()
-	for _, line in ipairs(tags.highlight_lines) do
-		vim.api.nvim_buf_add_highlight(tags.bufs, -1, "Folded", line, 0, -1)
+function tags.set_symbols_to_buf()
+	vim.api.nvim_buf_set_lines(tags.bufs, 0, -1, false, {})
+	vim.api.nvim_buf_set_lines(tags.bufs, 0, #tags.lines.names, false, tags.lines.names)
+end
+
+function tags.highlight_extra()
+	for index, fullname in ipairs(tags.lines.fullnames) do
+		if fullname ~= "" and fullname ~= tags.current_buff_fullname then
+			vim.api.nvim_buf_add_highlight(tags.bufs, -1, "Folded", index - 1, 0, -1)
+		end
 	end
 end
 
 function tags.flushConstToWindow()
-	local consts = {
-		"Constant",
-	}
-	for _, cut in ipairs(tags.consts) do
-		consts[#consts + 1] = "\t" .. cut.name
-	end
+	if #tags.consts > 0 then
+		tags.lines.names[#tags.lines.names + 1] = "Constant"
+		tags.lines.icons[#tags.lines.icons + 1] = "const"
+		tags.lines.fullnames[#tags.lines.fullnames + 1] = ""
+		tags.lines.lines[#tags.lines.lines + 1] = -1
 
-	if #consts > 1 then
-		vim.api.nvim_buf_set_lines(tags.bufs, tags.next_line_start, -1, false, consts)
-		-- vim.api.nvim_buf_add_highlight(tags.bufs,-1,"Folded",0,0,-1)
-		tags.next_line_start = #tags.consts + 1
+		for _, cut in ipairs(tags.consts) do
+			tags.lines.names[#tags.lines.names + 1] = "\t" .. cut.name
+			tags.lines.icons[#tags.lines.icons + 1] = "const"
+			tags.lines.fullnames[#tags.lines.fullnames + 1] = cut.filename
+			tags.lines.lines[#tags.lines.lines + 1] = cut.line
+		end
 	end
 end
 
 function tags.flushVarsToWindow()
-	local vars = {
-		"Variable"
-	}
+	if #tags.vars > 1 then
+		tags.lines.names[#tags.lines.names + 1] = "Variable"
+		tags.lines.icons[#tags.lines.icons + 1] = "var"
+		tags.lines.fullnames[#tags.lines.fullnames + 1] = ""
+		tags.lines.lines[#tags.lines.lines + 1] = -1
 
-	for _, cut in ipairs(tags.vars) do
-		vars[#vars + 1] = "\t" .. cut.name
-	end
-
-	if #vars > 1 then
-		vim.api.nvim_buf_set_lines(tags.bufs, tags.next_line_start, -1, false, vars)
-		tags.next_line_start = tags.next_line_start + #tags.vars + 1
+		for _, cut in ipairs(tags.vars) do
+			tags.lines.names[#tags.lines.names + 1] = "\t" .. cut.name
+			tags.lines.icons[#tags.lines.icons + 1] = "var"
+			tags.lines.fullnames[#tags.lines.fullnames + 1] = cut.filename
+			tags.lines.lines[#tags.lines.lines + 1] = cut.line
+		end
 	end
 end
 
 function tags.flushFunctionsToWindow()
-	local functions = {
-		"Function"
-	}
-	for _, cut in ipairs(tags.functions) do
-		functions[#functions + 1] = "\t" .. cut.name .. cut.signature .. cut.type
-	end
+	if #tags.functions > 1 then
+		tags.lines.names[#tags.lines.names + 1] = "Function"
+		tags.lines.icons[#tags.lines.icons + 1] = "func"
+		tags.lines.fullnames[#tags.lines.fullnames + 1] = ""
+		tags.lines.lines[#tags.lines.lines + 1] = -1
 
-	if #functions > 1 then
-		vim.api.nvim_buf_set_lines(tags.bufs, tags.next_line_start, -1, false, functions)
-		tags.next_line_start = tags.next_line_start + #tags.functions + 1
+		for _, cut in ipairs(tags.functions) do
+			tags.lines.names[#tags.lines.names + 1] = "\t" .. cut.name
+			tags.lines.icons[#tags.lines.icons + 1] = "func"
+			tags.lines.fullnames[#tags.lines.fullnames + 1] = cut.filename
+			tags.lines.lines[#tags.lines.lines + 1] = cut.line
+		end
 	end
 end
 
 function tags.flushCurrentFileStructAndAllMethodsToWindow()
 	for _, scut in ipairs(tags.currentFileStructs) do
-		-- flush struct
-		vim.api.nvim_buf_set_lines(tags.bufs, tags.next_line_start, -1, false, { scut.name })
-		tags.next_line_start = tags.next_line_start + 2
+		tags.lines.names[#tags.lines.names + 1] = scut.name
+		tags.lines.icons[#tags.lines.icons + 1] = "struct"
+		tags.lines.fullnames[#tags.lines.fullnames + 1] = scut.filename
+		tags.lines.lines[#tags.lines.lines + 1] = scut.line
 
-		-- local file methods
-		local lm = {}
 		for _, mcut in ipairs(tags.currentFileMethods) do
 			if mcut.ctype == scut.name then
-				lm[#lm + 1] = "\t" .. mcut.name .. mcut.signature
-			else
+				tags.lines.names[#tags.lines.names + 1] = "\t" .. mcut.name
+				tags.lines.icons[#tags.lines.icons + 1] = "method"
+				tags.lines.fullnames[#tags.lines.fullnames + 1] = mcut.filename
+				tags.lines.lines[#tags.lines.lines + 1] = mcut.line
 			end
-		end
-		if #lm > 0 then
-			vim.api.nvim_buf_set_lines(tags.bufs, tags.next_line_start, -1, false, lm)
-			tags.next_line_start = tags.next_line_start + #lm + 1
 		end
 
-		-- others file methods
-		local om = {}
 		for _, mcut in ipairs(tags.othersFileMethods) do
 			if mcut.ctype == scut.name then
-				om[#om + 1] = "\t" .. mcut.name .. mcut.signature
+				tags.lines.names[#tags.lines.names + 1] = "\t" .. mcut.name .. mcut.signature
+				tags.lines.icons[#tags.lines.icons + 1] = "method"
+				tags.lines.fullnames[#tags.lines.fullnames + 1] = mcut.filename
+				tags.lines.lines[#tags.lines.lines + 1] = mcut.line
 			end
-		end
-		if #om > 0 then
-			vim.api.nvim_buf_set_lines(tags.bufs, tags.next_line_start, -1, false, om)
-			for i = 1, #om do
-				tags.highlight_lines[#tags.highlight_lines + 1] = tags.next_line_start + i - 3
-			end
-			tags.next_line_start = tags.next_line_start + #om + 1
 		end
 	end
 end
@@ -216,31 +222,51 @@ function tags.flushCurrentFileMethodsAndStructToWindow()
 
 
 	for sname, methods in pairs(sm) do
+		-- search struct
+		for _, cut in ipairs(tags.othersFileStructs) do
+			if cut.name == sname then
+				tags.lines.names[#tags.lines.names + 1] = cut.name
+				tags.lines.icons[#tags.lines.icons + 1] = "struct"
+				tags.lines.fullnames[#tags.lines.fullnames + 1] = cut.filename
+				tags.lines.lines[#tags.lines.lines + 1] = cut.line
+				break
+			end
+		end
+
 		-- find not in current file's struct's methods
 		for _, cut in ipairs(tags.othersFileMethods) do
 			if cut.ctype == sname then
 				methods[#methods + 1] = cut
-				tags.highlight_lines[#tags.highlight_lines + 1] = tags.next_line_start + #methods - 4
 			end
 		end
 
-		-- flush struct
-		vim.api.nvim_buf_set_lines(tags.bufs, tags.next_line_start, -1, false, { sname })
-		tags.highlight_lines[#tags.highlight_lines + 1] = tags.next_line_start - 4
-		tags.next_line_start = tags.next_line_start + 2
-
-		local om = {}
 		for _, mcut in ipairs(methods) do
-			om[#om + 1] = "\t" .. mcut.name .. mcut.signature
+			tags.lines.names[#tags.lines.names + 1] = "\t" .. mcut.name
+			tags.lines.icons[#tags.lines.icons + 1] = "method"
+			tags.lines.fullnames[#tags.lines.fullnames + 1] = mcut.filename
+			tags.lines.lines[#tags.lines.lines + 1] = mcut.line
 		end
 
-		-- flush method
-		if #om > 0 then
-			vim.api.nvim_buf_set_lines(tags.bufs, tags.next_line_start, -1, false, om)
-			tags.next_line_start = tags.next_line_start + #om + 1
-		end
 	end
 
+end
+
+function tags.jump(line)
+	local jump_line = tags.lines.lines[line]
+	if tags.lines.fullnames[line] ~= "" then
+		vim.api.nvim_set_current_win(tags.windowf)
+		if tags.lines.fullnames[line] ~= tags.current_buff_fullname then
+			vim.cmd("e " .. tags.lines.fullnames[line])
+			tags.init()
+			tags.buff = vim.api.nvim_get_current_buf()
+			local file_path = tags.get_current_buff_path()
+			tags.generate(file_path)
+		end
+		if jump_line ~= 0 then
+			vim.cmd("execute  \"normal! " .. jump_line .. "G;zz\"")
+			vim.cmd("execute  \"normal! zz\"")
+		end
+	end
 end
 
 return tags
