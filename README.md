@@ -24,7 +24,7 @@ I use some plugins that reflect the file struct, they support many languages, bu
 **gotags**
 ```go get -u github.com/jstemmer/gotags```
 
-```use "crusj/structrue-go.nvim"```
+```git clone https://github.com/crusj/structrue-go.nvim.git  ~/.local/share/nvim/site/pack/plugins/start/structure-go.nvim```
 
 ```require('structure-go').setup()```
 
