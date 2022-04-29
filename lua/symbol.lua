@@ -1,13 +1,15 @@
 -- symbol parser
 local S = {
 	SymbolKind = {
-		i = {"interface","❙ "},
-		m = {"method","◨ "},
-		f = {"function","◧ "},
-		w = {"field","▪ "},
-		c = {"const","π "},
-		t = {"type",{"▱ ","❏ "}},
-		v = {"variable","◈ "}
+		n = { "interface", "❙ " },
+		i = { "import", "⍺ " },
+		m = { "method", "◨ " },
+		f = { "function", "◧ " },
+		w = { "field", "▪ " },
+		c = { "const", "π " },
+		t = { "type", { "▱ ", "❏ " } },
+		v = { "variable", "◈ " },
+		p = { "package", "⊞" }
 	}
 }
 
@@ -25,6 +27,7 @@ function S.New(tagline)
 		end
 	end
 
+	print(cuts[4])
 	return {
 		name = cuts[1],
 		filename = cuts[2],
@@ -33,7 +36,8 @@ function S.New(tagline)
 		access = cuts["access"] or "public",
 		signature = cuts["signature"] or "",
 		ctype = cuts["ctype"],
-		type = cuts["type"]
+		ntype = cuts["ntype"] or "",
+		type = cuts["type"] or ""
 	}
 end
 

@@ -4,11 +4,16 @@ local tags = {}
 
 -- init tags.
 function tags.init()
+	tags.package                   = nil
 	tags.consts                    = {}
 	tags.vars                      = {}
 	tags.functions                 = {}
+	tags.types                     = {}
+	tags.interfaces                = {}
+	tags.imports                   = {}
 	tags.currentFileStructs        = {}
 	tags.currentFileMethods        = {}
+	tags.currentFileIMethods       = {}
 	tags.currentFileLeftMethods    = {}
 	tags.othersFileStructs         = {}
 	tags.othersFileMethods         = {}
@@ -28,7 +33,6 @@ function tags.run(buff, bufs, windowf, windows)
 	tags.windows = windows
 	local file_path = tags.get_current_buff_path()
 	tags.generate(file_path)
-
 	tags.current_buff_name = string.sub(tags.current_buff_fullname, #file_path + 2)
 end
 
@@ -69,16 +73,30 @@ end
 -- group each tag line.
 function tags:group(cut)
 	if cut.filename == self.current_buff_fullname then
-		if cut.kind == "const" then
+		if cut.kind == "package" then
+			self.package = cut
+		elseif cut.kind == "interface" then
+			self.interfaces[#self.interfaces + 1] = cut
+		elseif cut.kind == "import" then
+			self.imports[#self.imports + 1] = cut
+		elseif cut.kind == "const" then
 			self.consts[#self.consts + 1] = cut
 		elseif cut.kind == "variable" then
 			self.vars[#self.vars + 1] = cut
 		elseif cut.kind == "function" then
 			self.functions[#self.functions + 1] = cut
-		elseif cut.kind == "type" and cut.type == "struct" then
-			self.currentFileStructs[#self.currentFileStructs + 1] = cut
+		elseif cut.kind == "type" then
+			if cut.type == "struct" then
+				self.currentFileStructs[#self.currentFileStructs + 1] = cut
+			else
+				self.types[#self.types + 1] = cut
+			end
 		elseif cut.kind == "method" then
-			self.currentFileMethods[#self.currentFileMethods + 1] = cut
+			if cut.ntype ~= "" then -- interface method
+				self.currentFileIMethods[#self.currentFileIMethods + 1] = cut
+			else
+				self.currentFileMethods[#self.currentFileMethods + 1] = cut
+			end
 		end
 	else
 		if cut.kind == "type" and cut.type == "struct" then
@@ -91,12 +109,22 @@ end
 
 -- write symbols to window.
 function tags.flushToWindow()
+	-- flush filename
+	tags.flushFileNameToWindow()
+	-- flush package
+	tags.flushPackageToWindow()
+	-- flush import
+	tags.flushImportsToWindow()
 	-- flush const
 	tags.flushConstToWindow()
 	-- flush vars
 	tags.flushVarsToWindow()
+	-- flush types
+	tags.flushTypesToWindow()
 	-- flush functions
 	tags.flushFunctionsToWindow()
+	-- flush interfaces
+	tags.flushInterfacesToWindow()
 	-- flush struct and methods
 	tags.flushCurrentFileStructAndAllMethodsToWindow()
 	-- flush method and struct
@@ -119,6 +147,32 @@ function tags.highlight_extra()
 	end
 end
 
+function tags.flushFileNameToWindow()
+	tags.lines.names[#tags.lines.names + 1] = "File: " .. tags.current_buff_fullname
+	tags.lines.fullnames[#tags.lines.fullnames + 1] = ""
+	tags.lines.lines[#tags.lines.lines + 1] = -1
+end
+
+function tags.flushPackageToWindow()
+	tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.p[2] .. " Package: " .. tags.package.name
+	tags.lines.fullnames[#tags.lines.fullnames + 1] = tags.package.filename
+	tags.lines.lines[#tags.lines.lines + 1] = tags.package.line
+end
+
+function tags.flushImportsToWindow()
+	if #tags.imports > 0 then
+		tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.i[2] .. "Import"
+		tags.lines.fullnames[#tags.lines.fullnames + 1] = ""
+		tags.lines.lines[#tags.lines.lines + 1] = -1
+
+		for _, cut in ipairs(tags.imports) do
+			tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.i[2] .. cut.name
+			tags.lines.fullnames[#tags.lines.fullnames + 1] = cut.filename
+			tags.lines.lines[#tags.lines.lines + 1] = cut.line
+		end
+	end
+end
+
 function tags.flushConstToWindow()
 	if #tags.consts > 0 then
 		tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.c[2] .. "Constant"
@@ -134,14 +188,27 @@ function tags.flushConstToWindow()
 end
 
 function tags.flushVarsToWindow()
-	if #tags.vars > 1 then
+	if #tags.vars >= 1 then
 		tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.v[2] .. "Variable"
 		tags.lines.fullnames[#tags.lines.fullnames + 1] = ""
 		tags.lines.lines[#tags.lines.lines + 1] = -1
 
 		for _, cut in ipairs(tags.vars) do
-			tags.lines.names[#tags.lines.names + 1] = "\t" .. cut.name
-			tags.lines.icons[#tags.lines.icons + 1] = "var"
+			tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.v[2] .. cut.name
+			tags.lines.fullnames[#tags.lines.fullnames + 1] = cut.filename
+			tags.lines.lines[#tags.lines.lines + 1] = cut.line
+		end
+	end
+end
+
+function tags.flushTypesToWindow()
+	if #tags.vars >= 1 then
+		tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.t[2][1] .. "Type"
+		tags.lines.fullnames[#tags.lines.fullnames + 1] = ""
+		tags.lines.lines[#tags.lines.lines + 1] = -1
+
+		for _, cut in ipairs(tags.types) do
+			tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.t[2][1] .. cut.name
 			tags.lines.fullnames[#tags.lines.fullnames + 1] = cut.filename
 			tags.lines.lines[#tags.lines.lines + 1] = cut.line
 		end
@@ -149,15 +216,30 @@ function tags.flushVarsToWindow()
 end
 
 function tags.flushFunctionsToWindow()
-	if #tags.functions > 1 then
+	if #tags.functions >= 1 then
 		tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.f[2] .. "Function"
 		tags.lines.fullnames[#tags.lines.fullnames + 1] = ""
 		tags.lines.lines[#tags.lines.lines + 1] = -1
 
 		for _, cut in ipairs(tags.functions) do
-			tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.f[2] .. cut.name
+			tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.f[2] .. cut.name .. cut.signature .. cut.type
 			tags.lines.fullnames[#tags.lines.fullnames + 1] = cut.filename
 			tags.lines.lines[#tags.lines.lines + 1] = cut.line
+		end
+	end
+end
+
+function tags.flushInterfacesToWindow()
+	for _, icut in ipairs(tags.interfaces) do
+		tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.n[2] .. icut.name
+		tags.lines.fullnames[#tags.lines.fullnames + 1] = icut.filename
+		tags.lines.lines[#tags.lines.lines + 1] = icut.line
+		for _, cut in ipairs(tags.currentFileIMethods) do
+			if cut.ntype == icut.name then
+				tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.m[2] .. cut.name .. cut.signature .. cut.type
+				tags.lines.fullnames[#tags.lines.fullnames + 1] = cut.filename
+				tags.lines.lines[#tags.lines.lines + 1] = cut.line
+			end
 		end
 	end
 end
@@ -170,7 +252,7 @@ function tags.flushCurrentFileStructAndAllMethodsToWindow()
 
 		for _, mcut in ipairs(tags.currentFileMethods) do
 			if mcut.ctype == scut.name then
-				tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.m[2] .. mcut.name
+				tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.m[2] .. mcut.name .. mcut.signature .. mcut.type
 				tags.lines.fullnames[#tags.lines.fullnames + 1] = mcut.filename
 				tags.lines.lines[#tags.lines.lines + 1] = mcut.line
 			end
@@ -181,8 +263,9 @@ function tags.flushCurrentFileStructAndAllMethodsToWindow()
 		end
 
 		for _, mcut in ipairs(tags.othersFileMethods) do
+			print(mcut.name, mcut.signature)
 			if mcut.ctype == scut.name then
-				tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.m[2] .. mcut.name .. mcut.signature
+				tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.m[2] .. mcut.name .. mcut.signature .. mcut.type
 				tags.lines.fullnames[#tags.lines.fullnames + 1] = mcut.filename
 				tags.lines.lines[#tags.lines.lines + 1] = mcut.line
 			end
@@ -203,6 +286,7 @@ function tags.flushCurrentFileMethodsAndStructToWindow()
 			end
 		end
 
+		print(mcut.name, mcut.ctype)
 		if not find then
 			if sm[mcut.ctype] ~= nil then
 				table.insert(sm[mcut.ctype], mcut)
@@ -217,7 +301,7 @@ function tags.flushCurrentFileMethodsAndStructToWindow()
 		-- search struct
 		for _, cut in ipairs(tags.othersFileStructs) do
 			if cut.name == sname then
-				tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.t[2][2]..cut.name
+				tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.t[2][2] .. cut.name
 				tags.lines.fullnames[#tags.lines.fullnames + 1] = cut.filename
 				tags.lines.lines[#tags.lines.lines + 1] = cut.line
 				break
@@ -234,7 +318,7 @@ function tags.flushCurrentFileMethodsAndStructToWindow()
 		end
 
 		for _, mcut in ipairs(methods) do
-			tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.m[2]..mcut.name
+			tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.m[2] .. mcut.name
 			tags.lines.fullnames[#tags.lines.fullnames + 1] = mcut.filename
 			tags.lines.lines[#tags.lines.lines + 1] = mcut.line
 		end
