@@ -1,4 +1,5 @@
 local symbol = require('symbol')
+local ns = require('namespace')
 
 local tags = {}
 
@@ -10,17 +11,17 @@ function tags.init()
 	tags.functions                 = {}
 	tags.types                     = {}
 	tags.interfaces                = {}
-	tags.imports                   = {}
-	tags.currentFileStructs        = {}
-	tags.currentFileMethods        = {}
 	tags.currentFileIMethods       = {}
-	tags.currentFileLeftMethods    = {}
-	tags.othersFileStructs         = {}
+	tags.imports                   = {}
+	tags.currentFileTypes          = {} -- inclue struct and type
+	tags.currentFileMethods        = {}
+	tags.othersFileTypes           = {}
 	tags.othersFileMethods         = {}
 	tags.current_buff_name         = ""
 	tags.current_buff_fullname     = ""
-	tags.lines                     = { names = {}, lines = {}, icons = {}, fullnames = {} }
+	tags.lines                     = { names = {}, lines = {}, lines_reverse = {}, icons = {}, fullnames = {}, highlights = {} }
 	tags.hide_others_method_status = false
+	tags.open_status               = true -- sg is open?
 end
 
 -- run tags parse and write to bufs
@@ -39,6 +40,15 @@ end
 function tags.get_current_buff_path()
 	tags.current_buff_fullname = vim.api.nvim_buf_get_name(tonumber(tags.buff))
 	return (string.gsub(tags.current_buff_fullname, "/[^/]+$", ""))
+end
+
+function tags.re_line(name, fullname, line, highlight)
+	tags.lines.names[#tags.lines.names + 1] = name
+	tags.lines.fullnames[#tags.lines.fullnames + 1] = fullname
+	tags.lines.lines[#tags.lines.lines + 1] = line
+	tags.lines.lines_reverse[line] = #tags.lines.lines
+	tags.lines.highlights[#tags.lines.highlights + 1] = highlight
+
 end
 
 -- generate tags use gotags.
@@ -86,11 +96,7 @@ function tags:group(cut)
 		elseif cut.kind == "function" then
 			self.functions[#self.functions + 1] = cut
 		elseif cut.kind == "type" then
-			if cut.type == "struct" then
-				self.currentFileStructs[#self.currentFileStructs + 1] = cut
-			else
-				self.types[#self.types + 1] = cut
-			end
+			self.currentFileTypes[#self.currentFileTypes + 1] = cut
 		elseif cut.kind == "method" then
 			if cut.ntype ~= "" then -- interface method
 				self.currentFileIMethods[#self.currentFileIMethods + 1] = cut
@@ -99,8 +105,8 @@ function tags:group(cut)
 			end
 		end
 	else
-		if cut.kind == "type" and cut.type == "struct" then
-			self.othersFileStructs[#self.othersFileStructs + 1] = cut
+		if cut.kind == "type" then
+			self.othersFileTypes[#self.othersFileTypes + 1] = cut
 		elseif cut.kind == "method" then
 			self.othersFileMethods[#self.othersFileMethods + 1] = cut
 		end
@@ -109,6 +115,7 @@ end
 
 -- write symbols to window.
 function tags.flushToWindow()
+	vim.api.nvim_buf_set_option(tags.bufs, "modifiable", true)
 	-- flush filename
 	tags.flushFileNameToWindow()
 	-- flush package
@@ -119,19 +126,18 @@ function tags.flushToWindow()
 	tags.flushConstToWindow()
 	-- flush vars
 	tags.flushVarsToWindow()
-	-- flush types
-	tags.flushTypesToWindow()
 	-- flush functions
 	tags.flushFunctionsToWindow()
 	-- flush interfaces
 	tags.flushInterfacesToWindow()
 	-- flush struct and methods
-	tags.flushCurrentFileStructAndAllMethodsToWindow()
+	tags.flushCurrentFileTypeAndAllMethodsToWindow()
 	-- flush method and struct
-	tags.flushCurrentFileMethodsAndStructToWindow()
+	tags.flushCurrentFileMethodsAndTypeToWindow()
 
 	tags.set_symbols_to_buf()
-	tags.highlight_extra()
+	tags.highlight_lines()
+	vim.api.nvim_buf_set_option(tags.bufs, "modifiable", false)
 end
 
 function tags.set_symbols_to_buf()
@@ -139,122 +145,86 @@ function tags.set_symbols_to_buf()
 	vim.api.nvim_buf_set_lines(tags.bufs, 0, #tags.lines.names, false, tags.lines.names)
 end
 
-function tags.highlight_extra()
-	for index, fullname in ipairs(tags.lines.fullnames) do
-		if fullname ~= "" and fullname ~= tags.current_buff_fullname then
-			vim.api.nvim_buf_add_highlight(tags.bufs, -1, "Folded", index - 1, 0, -1)
-		end
+function tags.highlight_lines()
+	for index, hl in ipairs(tags.lines.highlights) do
+		vim.api.nvim_buf_add_highlight(tags.bufs, ns[hl], hl, index - 1, 0, -1)
 	end
 end
 
 function tags.flushFileNameToWindow()
-	tags.lines.names[#tags.lines.names + 1] = "File: " .. tags.current_buff_fullname
-	tags.lines.fullnames[#tags.lines.fullnames + 1] = ""
-	tags.lines.lines[#tags.lines.lines + 1] = -1
+	tags.re_line("File: " .. tags.current_buff_fullname, "", -1, "sg_F")
 end
 
 function tags.flushPackageToWindow()
-	tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.p[2] .. " Package: " .. tags.package.name
-	tags.lines.fullnames[#tags.lines.fullnames + 1] = tags.package.filename
-	tags.lines.lines[#tags.lines.lines + 1] = tags.package.line
+	tags.re_line(symbol.SymbolKind.p[2] .. " Package: " .. tags.package.name, tags.package.filename, tags.package.line, "sg_p")
 end
 
 function tags.flushImportsToWindow()
 	if #tags.imports > 0 then
-		tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.i[2] .. "Import"
-		tags.lines.fullnames[#tags.lines.fullnames + 1] = ""
-		tags.lines.lines[#tags.lines.lines + 1] = -1
+		tags.re_line(symbol.SymbolKind.i[2] .. "Import", "", -1, "sg_i")
 
 		for _, cut in ipairs(tags.imports) do
-			tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.i[2] .. cut.name
-			tags.lines.fullnames[#tags.lines.fullnames + 1] = cut.filename
-			tags.lines.lines[#tags.lines.lines + 1] = cut.line
+			tags.re_line("\t" .. symbol.SymbolKind.i[2] .. cut.name, cut.filename, cut.line, "sg_i")
 		end
 	end
 end
 
 function tags.flushConstToWindow()
 	if #tags.consts > 0 then
-		tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.c[2] .. "Constant"
-		tags.lines.fullnames[#tags.lines.fullnames + 1] = ""
-		tags.lines.lines[#tags.lines.lines + 1] = -1
+		tags.re_line(symbol.SymbolKind.c[2] .. "Constant", "", -1, "sg_c")
 
 		for _, cut in ipairs(tags.consts) do
-			tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.c[2] .. cut.name
-			tags.lines.fullnames[#tags.lines.fullnames + 1] = cut.filename
-			tags.lines.lines[#tags.lines.lines + 1] = cut.line
+			tags.re_line("\t" .. symbol.SymbolKind.c[2] .. cut.name, cut.filename, cut.line, "sg_c")
 		end
 	end
 end
 
 function tags.flushVarsToWindow()
 	if #tags.vars >= 1 then
-		tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.v[2] .. "Variable"
-		tags.lines.fullnames[#tags.lines.fullnames + 1] = ""
-		tags.lines.lines[#tags.lines.lines + 1] = -1
+		tags.re_line(symbol.SymbolKind.v[2] .. "Variable", "", -1, "sg_v")
 
 		for _, cut in ipairs(tags.vars) do
-			tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.v[2] .. cut.name
-			tags.lines.fullnames[#tags.lines.fullnames + 1] = cut.filename
-			tags.lines.lines[#tags.lines.lines + 1] = cut.line
-		end
-	end
-end
-
-function tags.flushTypesToWindow()
-	if #tags.vars >= 1 then
-		tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.t[2][1] .. "Type"
-		tags.lines.fullnames[#tags.lines.fullnames + 1] = ""
-		tags.lines.lines[#tags.lines.lines + 1] = -1
-
-		for _, cut in ipairs(tags.types) do
-			tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.t[2][1] .. cut.name
-			tags.lines.fullnames[#tags.lines.fullnames + 1] = cut.filename
-			tags.lines.lines[#tags.lines.lines + 1] = cut.line
+			tags.re_line("\t" .. symbol.SymbolKind.v[2] .. cut.name, cut.filename, cut.line, "sg_v")
 		end
 	end
 end
 
 function tags.flushFunctionsToWindow()
 	if #tags.functions >= 1 then
-		tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.f[2] .. "Function"
-		tags.lines.fullnames[#tags.lines.fullnames + 1] = ""
-		tags.lines.lines[#tags.lines.lines + 1] = -1
+		tags.re_line(symbol.SymbolKind.f[2] .. "Function", "", -1, "sg_f")
 
 		for _, cut in ipairs(tags.functions) do
-			tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.f[2] .. cut.name .. cut.signature .. cut.type
-			tags.lines.fullnames[#tags.lines.fullnames + 1] = cut.filename
-			tags.lines.lines[#tags.lines.lines + 1] = cut.line
+			tags.re_line("\t" .. symbol.SymbolKind.f[2] .. cut.name .. cut.signature .. cut.type, cut.filename, cut.line, "sg_f")
 		end
 	end
 end
 
 function tags.flushInterfacesToWindow()
 	for _, icut in ipairs(tags.interfaces) do
-		tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.n[2] .. icut.name
-		tags.lines.fullnames[#tags.lines.fullnames + 1] = icut.filename
-		tags.lines.lines[#tags.lines.lines + 1] = icut.line
+		tags.re_line(symbol.SymbolKind.n[2] .. icut.name, icut.filename, icut.line, "sg_i")
 		for _, cut in ipairs(tags.currentFileIMethods) do
 			if cut.ntype == icut.name then
-				tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.m[2] .. cut.name .. cut.signature .. cut.type
-				tags.lines.fullnames[#tags.lines.fullnames + 1] = cut.filename
-				tags.lines.lines[#tags.lines.lines + 1] = cut.line
+				tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2], cut.name, cut.signature, cut.type), cut.filename, cut.line, "sg_m")
 			end
 		end
 	end
 end
 
-function tags.flushCurrentFileStructAndAllMethodsToWindow()
-	for _, scut in ipairs(tags.currentFileStructs) do
-		tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.t[2][2] .. scut.name
-		tags.lines.fullnames[#tags.lines.fullnames + 1] = scut.filename
-		tags.lines.lines[#tags.lines.lines + 1] = scut.line
+function tags.flushCurrentFileTypeAndAllMethodsToWindow()
+	for _, tcut in ipairs(tags.currentFileTypes) do
+		local icon = symbol.SymbolKind.t[2][2] -- struct icon
+		if tcut.type ~= "struct" then
+			icon = symbol.SymbolKind.t[2][1]
+		end
+		local name = icon .. tcut.name
+		if tcut.type ~= "struct" then
+			name = string.format("%s%s(%s)", icon, tcut.name, tcut.type)
+		end
+		tags.re_line(name, tcut.filename, tcut.line, "sg_t")
 
 		for _, mcut in ipairs(tags.currentFileMethods) do
-			if mcut.ctype == scut.name then
-				tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.m[2] .. mcut.name .. mcut.signature .. mcut.type
-				tags.lines.fullnames[#tags.lines.fullnames + 1] = mcut.filename
-				tags.lines.lines[#tags.lines.lines + 1] = mcut.line
+			if mcut.ctype == tcut.name then
+				tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2], mcut.name, mcut.signature, mcut.type), mcut.filename, mcut.line, "sg_m")
 			end
 		end
 
@@ -263,30 +233,26 @@ function tags.flushCurrentFileStructAndAllMethodsToWindow()
 		end
 
 		for _, mcut in ipairs(tags.othersFileMethods) do
-			print(mcut.name, mcut.signature)
-			if mcut.ctype == scut.name then
-				tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.m[2] .. mcut.name .. mcut.signature .. mcut.type
-				tags.lines.fullnames[#tags.lines.fullnames + 1] = mcut.filename
-				tags.lines.lines[#tags.lines.lines + 1] = mcut.line
+			if mcut.ctype == tcut.name then
+				tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2], mcut.name, mcut.signature, mcut.type), mcut.filename, mcut.line, "sg_m")
 			end
 		end
 		::continue::
 	end
 end
 
-function tags.flushCurrentFileMethodsAndStructToWindow()
+function tags.flushCurrentFileMethodsAndTypeToWindow()
 	-- struct methods
 	local sm = {}
 	for _, mcut in ipairs(tags.currentFileMethods) do
 		local find = false
-		for _, scut in ipairs(tags.currentFileStructs) do
+		for _, scut in ipairs(tags.currentFileTypes) do
 			if scut.name == mcut.ctype then
 				find = true
 				break
 			end
 		end
 
-		print(mcut.name, mcut.ctype)
 		if not find then
 			if sm[mcut.ctype] ~= nil then
 				table.insert(sm[mcut.ctype], mcut)
@@ -299,11 +265,18 @@ function tags.flushCurrentFileMethodsAndStructToWindow()
 
 	for sname, methods in pairs(sm) do
 		-- search struct
-		for _, cut in ipairs(tags.othersFileStructs) do
+		for _, cut in ipairs(tags.othersFileTypes) do
 			if cut.name == sname then
-				tags.lines.names[#tags.lines.names + 1] = symbol.SymbolKind.t[2][2] .. cut.name
-				tags.lines.fullnames[#tags.lines.fullnames + 1] = cut.filename
-				tags.lines.lines[#tags.lines.lines + 1] = cut.line
+				local icon = symbol.SymbolKind.t[2][2] -- struct icon
+				if cut.type ~= "struct" then
+					icon = symbol.SymbolKind.t[2][1]
+				end
+				local name = cut.name
+				if cut.type ~= "struct" then
+					name = string.format("%s%s(%s)", icon, cut.name, cut.type)
+				end
+
+				tags.re_line(name, cut.filename, cut.line, "sg_t")
 				break
 			end
 		end
@@ -318,9 +291,7 @@ function tags.flushCurrentFileMethodsAndStructToWindow()
 		end
 
 		for _, mcut in ipairs(methods) do
-			tags.lines.names[#tags.lines.names + 1] = "\t" .. symbol.SymbolKind.m[2] .. mcut.name
-			tags.lines.fullnames[#tags.lines.fullnames + 1] = mcut.filename
-			tags.lines.lines[#tags.lines.lines + 1] = mcut.line
+			tags.re_line(string.format("\t %s%s %s %s", symbol.SymbolKind.m[2], mcut.name, mcut.signature, mcut.type), mcut.filename, mcut.line, "sg_m")
 		end
 
 	end
@@ -333,10 +304,6 @@ function tags.jump(line)
 		vim.api.nvim_set_current_win(tags.windowf)
 		if tags.lines.fullnames[line] ~= tags.current_buff_fullname then
 			vim.cmd("e " .. tags.lines.fullnames[line])
-			tags.init()
-			tags.buff = vim.api.nvim_get_current_buf()
-			local file_path = tags.get_current_buff_path()
-			tags.generate(file_path)
 		end
 		if jump_line ~= 0 then
 			vim.cmd("execute  \"normal! " .. jump_line .. "G;zz\"")
@@ -346,7 +313,7 @@ function tags.jump(line)
 end
 
 function tags.hide_others_methods_toggle()
-	tags.lines = { names = {}, lines = {}, icons = {}, fullnames = {} }
+	tags.lines = { names = {}, lines = {}, icons = {}, fullnames = {}, highlights = {}, lines_reverse = {} }
 	if tags.hide_others_method_status then
 		tags.show_others_methods()
 	else
@@ -363,6 +330,17 @@ end
 function tags.hide_others_methods()
 	tags.hide_others_method_status = true
 	tags.flushToWindow()
+end
+
+function tags.refresh()
+	local buf = vim.api.nvim_get_current_buf()
+	local buf_name = vim.api.nvim_buf_get_name(buf)
+	if buf_name ~= tags.current_buff_fullname then
+		tags.init()
+		tags.buff = buf
+		local file_path = tags.get_current_buff_path()
+		tags.generate(file_path)
+	end
 end
 
 return tags

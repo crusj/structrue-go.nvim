@@ -1,15 +1,16 @@
 -- symbol parser
 local S = {
 	SymbolKind = {
-		n = { "interface", "❙ " },
-		i = { "import", "⍺ " },
-		m = { "method", "◨ " },
-		f = { "function", "◧ " },
-		w = { "field", "▪ " },
-		c = { "const", "π " },
-		t = { "type", { "▱ ", "❏ " } },
-		v = { "variable", "◈ " },
-		p = { "package", "⊞" }
+		n = { "interface", "❙ ", "guifg=Green" },
+		i = { "import", "⍺ ", "guifg=Gray" },
+		m = { "method", "◨ ", "guifg=DarkGreen" },
+		f = { "function", "◧ ", "guifg=DarkBlue" },
+		w = { "field", "▪ ", "guifg=LightGray" },
+		c = { "const", "π ", "guifg=Orange" },
+		t = { "type", { "▱ ", "❏ " }, "guifg=Purple" },
+		v = { "variable", "◈ ", "guifg=Magenta" },
+		p = { "package", "⊞", "guifg=Red" },
+		F = { "filename", "", "guifg=Black" }
 	}
 }
 
@@ -27,7 +28,6 @@ function S.New(tagline)
 		end
 	end
 
-	print(cuts[4])
 	return {
 		name = cuts[1],
 		filename = cuts[2],
