@@ -13,7 +13,7 @@ I use some plugins that reflect the file struct, they support many languages, bu
 * jump from symbols.
 *
 *
-![demo](https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/iShot2022-04-29_2.png)
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/iShot2022-04-29_2.png" width="350">
 
 ## Try
 
