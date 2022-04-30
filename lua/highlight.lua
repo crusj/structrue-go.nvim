@@ -34,8 +34,8 @@ function hl.register_namespace()
 			ns["sg_" .. k] = vim.api.nvim_create_namespace(v[3])
 		end
 	end
-	vim.cmd("highlight sg_cls guibg=Grey guifg=White")
-	ns["sg_cls"] = vim.api.nvim_create_namespace("guibg=Grey guifg=White")
+	vim.cmd("highlight sg_cls "..symbol.cls_hl)
+	ns["sg_cls"] = vim.api.nvim_create_namespace(symbol.cls_hl)
 end
 
 function hl.stop_hl_cls()

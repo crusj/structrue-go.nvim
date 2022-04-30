@@ -1,7 +1,12 @@
 local symbol = require('symbol')
 local ns = require('namespace')
+local tags = {
+	fold_status = {}
+}
 
-local tags = {}
+function tags.setup(config)
+	tags.config = config
+end
 
 -- init tags.
 function tags.init()
@@ -20,7 +25,7 @@ function tags.init()
 	tags.othersFileMethods         = {}
 	tags.current_buff_name         = ""
 	tags.current_buff_fullname     = ""
-	tags.lines                     = { names = {}, lines = {}, lines_reverse = {}, icons = {}, fullnames = {}, highlights = {} }
+	tags.lines                     = { names = {}, lines = {}, lines_reverse = {}, fullnames = {}, highlights = {} }
 	tags.hide_others_method_status = false
 	tags.open_status               = true -- sg is open?
 end
@@ -118,6 +123,10 @@ end
 
 -- write symbols to window.
 function tags.flushToWindow()
+	if tags.fold_status[tags.current_buff_fullname] == nil then
+		tags.fold_status[tags.current_buff_fullname] = {}
+	end
+
 	vim.api.nvim_buf_set_option(tags.bufs, "modifiable", true)
 	-- flush filename
 	tags.flushFileNameToWindow()
@@ -145,7 +154,11 @@ end
 
 function tags.set_symbols_to_buf()
 	vim.api.nvim_buf_set_lines(tags.bufs, 0, -1, false, {})
-	vim.api.nvim_buf_set_lines(tags.bufs, 0, #tags.lines.names, false, tags.lines.names)
+	local names = {}
+	for _, v in ipairs(tags.lines.names) do
+		table.insert(names, v[1])
+	end
+	vim.api.nvim_buf_set_lines(tags.bufs, 0, #names, false, names)
 end
 
 function tags.highlight_lines()
@@ -155,59 +168,126 @@ function tags.highlight_lines()
 end
 
 function tags.flushFileNameToWindow()
-	tags.re_line("File: " .. tags.current_buff_fullname, "", -1, "sg_F")
+	if tags.config.show_filename == true then
+		tags.re_line({ symbol.SymbolKind.F[2] .. "file: " .. tags.current_buff_fullname }, "", -1, "sg_F")
+	end
 end
 
 function tags.flushPackageToWindow()
-	tags.re_line(symbol.SymbolKind.p[1] .. " Package: " .. tags.package.name, tags.package.filename, tags.package.line, "sg_p")
+	tags.re_line({ symbol.SymbolKind.p[2] .. "package: " .. tags.package.name }, tags.package.filename, tags.package.line, "sg_p")
 end
 
 function tags.flushImportsToWindow()
+	if tags.fold_status[tags.current_buff_fullname]["import"] == nil then
+		tags.fold_status[tags.current_buff_fullname]["import"] = tags.config.fold.import
+	end
+
 	if #tags.imports > 0 then
-		tags.re_line(symbol.SymbolKind.i[2][1] .. "Import", "", -1, "sg_i")
+		local fold_icon = tags.config.fold_open_icon
+		if tags.fold_status[tags.current_buff_fullname]["import"] == true then
+			fold_icon = tags.config.fold_close_icon
+		end
+
+		tags.re_line({ fold_icon .. "import", "import" }, "", -1, "sg_i")
+
+		if tags.fold_status[tags.current_buff_fullname]["import"] == true then
+			return
+		end
 
 		for _, cut in ipairs(tags.imports) do
-			tags.re_line("\t" .. symbol.SymbolKind.i[2][2] .. cut.name, cut.filename, cut.line, "sg_i")
+			tags.re_line({ "\t" .. symbol.SymbolKind.i[2] .. cut.name }, cut.filename, cut.line, "sg_i")
 		end
 	end
 end
 
 function tags.flushConstToWindow()
+	if tags.fold_status[tags.current_buff_fullname]["const"] == nil then
+		tags.fold_status[tags.current_buff_fullname]["const"] = tags.config.fold.const
+	end
+
 	if #tags.consts > 0 then
-		tags.re_line(symbol.SymbolKind.c[2][1] .. "Constant", "", -1, "sg_c")
+		local fold_icon = tags.config.fold_open_icon
+		if tags.fold_status[tags.current_buff_fullname]["const"] == true then
+			fold_icon = tags.config.fold_close_icon
+		end
+
+		tags.re_line({ fold_icon .. "const", "const" }, "", -1, "sg_c")
+
+		if tags.fold_status[tags.current_buff_fullname]["const"] == true then
+			return
+		end
 
 		for _, cut in ipairs(tags.consts) do
-			tags.re_line("\t" .. symbol.SymbolKind.c[2][2] .. cut.name, cut.filename, cut.line, "sg_c")
+			tags.re_line({ "\t" .. symbol.SymbolKind.c[2] .. cut.name }, cut.filename, cut.line, "sg_c")
 		end
 	end
 end
 
 function tags.flushVarsToWindow()
+	if tags.fold_status[tags.current_buff_fullname]["var"] == nil then
+		tags.fold_status[tags.current_buff_fullname]["var"] = tags.config.fold.variable
+	end
+
 	if #tags.vars >= 1 then
-		tags.re_line(symbol.SymbolKind.v[2][1] .. "Variable", "", -1, "sg_v")
+		local fold_icon = tags.config.fold_open_icon
+		if tags.fold_status[tags.current_buff_fullname]["var"] == true then
+			fold_icon = tags.config.fold_close_icon
+		end
+
+		tags.re_line({ fold_icon .. "var", "var" }, "", -1, "sg_v")
+
+		if tags.fold_status[tags.current_buff_fullname]["var"] == true then
+			return
+		end
 
 		for _, cut in ipairs(tags.vars) do
-			tags.re_line("\t" .. symbol.SymbolKind.v[2][2] .. cut.name, cut.filename, cut.line, "sg_v")
+			tags.re_line({ "\t" .. symbol.SymbolKind.v[2] .. cut.name }, cut.filename, cut.line, "sg_v")
 		end
 	end
 end
 
 function tags.flushFunctionsToWindow()
+	if tags.fold_status[tags.current_buff_fullname]["func"] == nil then
+		tags.fold_status[tags.current_buff_fullname]["func"] = tags.config.fold.func
+	end
+
 	if #tags.functions >= 1 then
-		tags.re_line(symbol.SymbolKind.f[2][1] .. "Function", "", -1, "sg_f")
+		local fold_icon = tags.config.fold_open_icon
+		if tags.fold_status[tags.current_buff_fullname]["func"] == true then
+			fold_icon = tags.config.fold_close_icon
+		end
+		tags.re_line({ fold_icon .. "func", "func" }, "", -1, "sg_f")
+
+		if tags.fold_status[tags.current_buff_fullname]["func"] == true then
+			return
+		end
 
 		for _, cut in ipairs(tags.functions) do
-			tags.re_line("\t" .. symbol.SymbolKind.f[2][2] .. cut.name .. cut.signature .. cut.type, cut.filename, cut.line, "sg_f")
+			tags.re_line({ "\t" .. symbol.SymbolKind.f[2] .. cut.name .. cut.signature .. cut.type }, cut.filename, cut.line, "sg_f")
 		end
 	end
 end
 
 function tags.flushInterfacesToWindow()
 	for _, icut in ipairs(tags.interfaces) do
-		tags.re_line(symbol.SymbolKind.n[2][1] .. icut.name, icut.filename, icut.line, "sg_i")
+		if tags.fold_status[tags.current_buff_fullname][icut.name] == nil then
+			tags.fold_status[tags.current_buff_fullname][icut.name] = tags.config.fold.interface
+		end
+
+		local fold_icon = tags.config.fold_open_icon
+		if tags.fold_status[tags.current_buff_fullname][icut.name] == true then
+			fold_icon = tags.config.fold_close_icon
+		end
+
+		tags.re_line({ fold_icon .. icut.name, icut.filename, icut.name }, icut.line, "sg_i")
+
+		if tags.fold_status[tags.current_buff_fullname][icut.name] == true then
+			return
+		end
+
 		for _, cut in ipairs(tags.currentFileIMethods) do
 			if cut.ntype == icut.name then
-				tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][2], cut.name, cut.signature, cut.type), cut.filename, cut.line, "sg_m_1")
+				tags.re_line({ string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][1], cut.name, cut.signature, cut.type) }, cut.filename, cut.line, "sg_m_1")
 			end
 		end
 	end
@@ -215,26 +295,34 @@ end
 
 function tags.flushCurrentFileTypeAndAllMethodsToWindow()
 	for _, tcut in ipairs(tags.currentFileTypes) do
-		local icon = symbol.SymbolKind.t[2][3] -- struct icon
-		if tcut.type ~= "struct" then
-			icon = symbol.SymbolKind.t[2][1]
+		if tags.fold_status[tags.current_buff_fullname][tcut.name] == nil then
+			tags.fold_status[tags.current_buff_fullname][tcut.name] = tags.config.fold.type
 		end
-		local name = icon .. tcut.name
-		if tcut.type ~= "struct" then
-			name = string.format("%s%s(%s)", icon, tcut.name, tcut.type)
-		end
-		tags.re_line(name, tcut.filename, tcut.line, "sg_t")
 
-		-- current file fields
+		local fold_icon = tags.config.fold_open_icon
+		if tags.fold_status[tags.current_buff_fullname][tcut.name] == true then
+			fold_icon = tags.config.fold_close_icon
+		end
+
+		local name = fold_icon .. tcut.name
+		if tcut.type ~= "struct" then
+			name = string.format("%s%s(%s)", fold_icon, tcut.name, tcut.type)
+		end
+		tags.re_line({ name, tcut.name }, tcut.filename, tcut.line, "sg_t")
+
+		if tags.fold_status[tags.current_buff_fullname][tcut.name] == true then
+			return
+		end
+
 		for _, fcut in ipairs(tags.currentFileSFields) do
 			if fcut.ctype == tcut.name then
-				tags.re_line(string.format("\t %s%s %s", symbol.SymbolKind.w[2], fcut.name, fcut.type), fcut.filename, fcut.line, "sg_w")
+				tags.re_line({ string.format("\t %s%s %s", symbol.SymbolKind.w[2], fcut.name, fcut.type) }, fcut.filename, fcut.line, "sg_w")
 			end
 		end
 		-- current file methods
 		for _, mcut in ipairs(tags.currentFileMethods) do
 			if mcut.ctype == tcut.name then
-				tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2], mcut.name, mcut.signature, mcut.type), mcut.filename, mcut.line, "sg_m_1")
+				tags.re_line({ string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][1], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_1")
 			end
 		end
 
@@ -244,7 +332,7 @@ function tags.flushCurrentFileTypeAndAllMethodsToWindow()
 
 		for _, mcut in ipairs(tags.othersFileMethods) do
 			if mcut.ctype == tcut.name then
-				tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2], mcut.name, mcut.signature, mcut.type), mcut.filename, mcut.line, "sg_m_2")
+				tags.re_line({ string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][2], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_2")
 			end
 		end
 		::continue::
@@ -276,20 +364,30 @@ function tags.flushCurrentFileMethodsAndTypeToWindow()
 	for sname, methods in pairs(sm) do
 		-- search struct
 		for _, cut in ipairs(tags.othersFileTypes) do
+			if tags.fold_status[tags.current_buff_fullname][cut.name] == nil then
+				tags.fold_status[tags.current_buff_fullname][cut.name] = tags.config.fold.type
+			end
+
 			if cut.name == sname then
-				local icon = symbol.SymbolKind.t[2][3] -- struct icon
-				if cut.type ~= "struct" then
-					icon = symbol.SymbolKind.t[2][1]
-				end
-				local name = icon..cut.name
-				if cut.type ~= "struct" then
-					name = string.format("%s%s(%s)", icon, cut.name, cut.type)
+				local fold_icon = tags.config.fold_open_icon
+				if tags.fold_status[tags.current_buff_fullname][cut.name] == true then
+					fold_icon = tags.config.fold_close_icon
 				end
 
-				tags.re_line(name, cut.filename, cut.line, "sg_t")
+				local name = fold_icon .. cut.name
+				if cut.type ~= "struct" then
+					name = string.format("%s%s(%s)", fold_icon, cut.name, cut.type)
+				end
+
+				tags.re_line({ name, cut.name }, cut.filename, cut.line, "sg_t")
+				if tags.fold_status[tags.current_buff_fullname][cut.name] == true then
+					return
+				end
+
 				break
 			end
 		end
+
 
 		-- find not in current file's struct's methods
 		local others_method_start_index = -1
@@ -304,10 +402,13 @@ function tags.flushCurrentFileMethodsAndTypeToWindow()
 
 		for index, mcut in ipairs(methods) do
 			local hl = "sg_m_1"
-			if index == others_method_start_index - 1 then
-				hl = "sg_m_2"
+			local icon = symbol.SymbolKind.m[2][1]
+			if index > others_method_start_index - 1 then
+				hl   = "sg_m_2"
+				icon = symbol.SymbolKind.m[2][2]
+
 			end
-			tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2], mcut.name, mcut.signature, mcut.type), mcut.filename, mcut.line, hl)
+			tags.re_line({ string.format("\t %s%s%s %s", icon, mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, hl)
 		end
 
 	end
@@ -329,7 +430,7 @@ function tags.jump(line)
 end
 
 function tags.hide_others_methods_toggle()
-	tags.lines = { names = {}, lines = {}, icons = {}, fullnames = {}, highlights = {}, lines_reverse = {} }
+	tags.lines = { names = {}, lines = {}, fullnames = {}, highlights = {}, lines_reverse = {} }
 	if tags.hide_others_method_status then
 		tags.show_others_methods()
 	else
@@ -357,6 +458,35 @@ function tags.refresh()
 		local file_path = tags.get_current_buff_path()
 		tags.generate(file_path)
 	end
+end
+
+function tags.update_fold_status(data)
+	if tags.fold_status[tags.current_buff_fullname] == nil then
+		tags.fold_status[data.current_buff_fullname] = {}
+	end
+	tags.fold_status[data.current_buff_fullname][data.symbol] = data.symbol.is_fold
+end
+
+-- fold symbol
+function tags.fold_toggle()
+	local line = vim.api.nvim_exec("echo line('.')", true)
+	if line == nil then
+		return
+	end
+	line = tonumber(line)
+	if line == nil then
+		return
+	end
+	local symbol = tags.lines.names[line][2]
+	if symbol == nil then
+		return
+	end
+
+	tags.fold_status[tags.current_buff_fullname][symbol] = not tags.fold_status[tags.current_buff_fullname][symbol]
+	tags.lines                                           = { names = {}, lines = {}, lines_reverse = {}, fullnames = {}, highlights = {} }
+	tags.flushToWindow()
+	vim.cmd("execute  \"normal! " .. line .. "G;zz\"")
+
 end
 
 return tags

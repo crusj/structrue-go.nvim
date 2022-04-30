@@ -1,11 +1,13 @@
 local hl = require("highlight")
 local tags = require("tags")
 local event = require("event")
+local symbol = require("symbol")
 local sg = {
 	buff = nil,
 	bufs = nil,
 	windows = nil,
-	buff_width = 0
+	buff_width = 0,
+	config = {},
 }
 -- create window
 function sg.create_window()
@@ -13,9 +15,128 @@ function sg.create_window()
 	vim.cmd('botright vs')
 end
 
-function sg.setup()
+function sg.setup(config)
+	sg.config = sg.merge_config(config)
 	sg.register_events()
+	symbol.setup(sg.config)
 	hl.init()
+	tags.setup(sg.config)
+
+end
+
+-- merge user defined config
+function sg.merge_config(config)
+	local default_config = {
+		show_others_method = true, -- bool show methods of struct whose not in current file
+		show_filename = true, -- bool
+		number = "no", -- show number: no | nu | rnu
+		fold_open_icon = " ",
+		fold_close_icon = " ",
+		cursor_symbol_hl = "guibg=Gray guifg=White", -- symbol hl under cursor,
+		symbol = { -- symbol style
+			filename = {
+				hl = "guifg=Black", -- highlight symbol
+				icon = " " -- symbol icon
+			},
+			package = {
+				hl = "guifg=Red",
+				icon = "⊞ "
+			},
+			import = {
+				hl = "guifg=Grey",
+				icon = "⌬ "
+			},
+			const = {
+				hl = "guifg=Orange",
+				icon = "π ",
+			},
+			variable = {
+				hl = "guifg=Magenta",
+				icon = "◈ ",
+			},
+			func = {
+				hl = "guifg=DarkBlue",
+				icon = "◧ ",
+			},
+			interface = {
+				hl = "guifg=Green",
+				icon = "❙ "
+			},
+			type = {
+				hl = "guifg=Purple",
+				icon = "▱ ",
+			},
+			struct = {
+				hl = "guifg=Purple",
+				icon = "❏ ",
+			},
+			field = {
+				hl = "guifg=DarkYellow",
+				icon = "▪ "
+			},
+			method_current = {
+				hl = "guifg=DarkGreen",
+				icon = "◨ "
+			},
+			method_others = {
+				hl = "guifg=LightGreen",
+				icon = "◨ "
+			},
+		},
+		keymap = {
+			toggle = "<leader>m", -- toggle structure-go window
+			show_others_method_toggle = "H", -- show or hidden the methods of struct whose not in current file
+			symbol_jump = "<CR>", -- jump to symbol file under cursor
+			fold_toggle = "\\z"
+		},
+		fold = { -- fold symbols
+			import = true,
+			const = false,
+			variable = false,
+			type = false,
+			interface = false,
+			func = false,
+		},
+	}
+
+	-- invalid config
+	if config == nil or type(config) ~= "table" then
+		return default_config
+	end
+
+	for dk, dv in pairs(default_config) do
+		if type(dv) ~= "table" then
+			if config[dk] ~= nil then
+				default_config[dk] = config[dk]
+			end
+			goto continue
+		end
+
+		if (dk == "fold" or dk == "keymap") and config[dk] ~= nil then
+			for fk, fv in pairs(dv) do
+				if config[dk][fk] ~= nil then
+					default_config[dk][fk] = fv
+				end
+			end
+		end
+
+		-- symbol
+		if dk == "symbol" and config[dk] ~= nil then
+			for sk, sv in pairs(dv) do
+				if config[dk][sk] ~= nil then
+					for k, v in pairs(sv) do
+						if config[dk][sk][k] ~= nil then
+							default_config[dk][sk][k] = v
+						end
+					end
+				end
+			end
+		end
+
+		::continue::
+	end
+
+	return default_config
 end
 
 -- open
@@ -73,18 +194,18 @@ function sg.toggle()
 end
 
 function sg.key_binds()
-	vim.api.nvim_buf_set_keymap(sg.bufs, "n", "<cr>", ":lua require'structure-go'.jump()<cr>", {})
-	vim.api.nvim_buf_set_keymap(sg.bufs, "n", "H", ":lua require'structure-go'.hide_others_methods_toggle()<cr>", {})
+	vim.api.nvim_buf_set_keymap(sg.bufs, "n", sg.config.keymap.toggle, ":lua require'structure-go'.toggle()<cr>", { silent = true })
+	vim.api.nvim_buf_set_keymap(sg.bufs, "n", sg.config.keymap.symbol_jump, ":lua require'structure-go'.jump()<cr>", { silent = true })
+	vim.api.nvim_buf_set_keymap(sg.bufs, "n", sg.config.keymap.show_others_method_toggle, ":lua require'structure-go'.hide_others_methods_toggle()<cr>", { silent = true })
+	vim.api.nvim_buf_set_keymap(sg.bufs, "n", sg.config.keymap.fold_toggle, ":lua require'structure-go'.fold_toggle()<cr>", { silent = true })
 end
 
+-- register events
 function sg.register_events()
 	vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
 		pattern = { "*.go" },
 		callback = event.enter
 	})
-end
-
-function sg.register_timer()
 end
 
 -- jump from symbols
@@ -97,4 +218,8 @@ function sg.hide_others_methods_toggle()
 	tags.hide_others_methods_toggle()
 end
 
+
+function sg.fold_toggle()
+	tags.fold_toggle()
+end
 return sg

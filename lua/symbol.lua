@@ -1,20 +1,22 @@
 -- symbol parser
-local S = {
-	SymbolKind = {
-		n = { "interface", { "並", "❙ " }, "guifg=Green" },
-		i = { "import", { "並", "⍺ " }, "guifg=Gray" },
-		m = { "method", "◨ ", { "guifg=DarkGreen", "guifg=LightGreen" } },
-		f = { "function", { "並", "◧ " }, "guifg=DarkBlue" },
-		w = { "field", "▪ ", "guifg=DarkYellow" },
-		c = { "const", { "並", "π " }, "guifg=Orange" },
-		t = { "type", { "並", "▱ ", "❏ " }, "guifg=Purple" },
-		v = { "variable", { "並", "◈ " }, "guifg=Magenta" },
-		p = { "package", { "", "⊞" }, "guifg=Red" },
-		F = { "filename", { "", "" }, "guifg=Black" },
-		e = { "field", "▪ ", "guifg=DarkYellow" },
-	}
-}
+local S = {}
 
+function S.setup(config)
+	S.SymbolKind = {
+		F = { "filename", config.symbol.filename.icon, config.symbol.filename.hl },
+		p = { "package", config.symbol.package.icon, config.symbol.package.hl },
+		n = { "interface", config.symbol.interface.icon, config.symbol.interface.hl },
+		i = { "import", config.symbol.import.icon, config.symbol.import.hl },
+		m = { "method", {config.symbol.method_current.icon,config.symbol.method_others.icon}, { config.symbol.method_current.hl, config.symbol.method_others.hl } },
+		f = { "function", config.symbol.func.icon, config.symbol.func.hl },
+		w = { "field", config.symbol.field.icon, config.symbol.field.hl },
+		c = { "const", config.symbol.const.icon, config.symbol.const.hl },
+		t = { "type", { config.symbol.type.icon, config.symbol.struct.icon }, config.symbol.type.hl },
+		v = { "variable",  config.symbol.variable.icon , config.symbol.variable.hl },
+		e = { "field", config.symbol.field.icon, config.symbol.field.hl },
+	}
+	S.cls_hl = config.cursor_symbol_hl
+end
 
 -- parse tag line
 function S.New(tagline)
