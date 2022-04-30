@@ -37,7 +37,7 @@ go get -u github.com/jstemmer/gotags
 
 ### Install
 ```shell
-git clone https://github.com/crusj/structrue-go.nvim.git  ~/.local/share/nvim/site/pack/plugins/start/structure-go.nvim```
+git clone https://github.com/crusj/structrue-go.nvim.git  ~/.local/share/nvim/site/pack/plugins/start/structure-go.nvim
 ```
 
 ## Usage

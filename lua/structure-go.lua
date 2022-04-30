@@ -27,7 +27,6 @@ end
 -- merge user defined config
 function sg.merge_config(config)
 	local default_config = {
-		show_others_method = true, -- bool show methods of struct whose not in current file
 		show_filename = true, -- bool
 		number = "no", -- show number: no | nu | rnu
 		fold_open_icon = " ",
@@ -164,8 +163,15 @@ function sg.open()
 		vim.api.nvim_win_set_buf(sg.windows, sg.bufs)
 	end
 
-	vim.api.nvim_win_set_option(sg.windows, 'number', false)
-	vim.api.nvim_win_set_option(sg.windows, 'relativenumber', false)
+	if sg.config.number == "nu" then
+		vim.api.nvim_win_set_option(sg.windows, 'number', true)
+	elseif sg.config.number == "rnu" then
+		vim.api.nvim_win_set_option(sg.windows, 'relativenumber', true)
+	else
+		vim.api.nvim_win_set_option(sg.windows, 'relativenumber', false)
+		vim.api.nvim_win_set_option(sg.windows, 'number', false)
+	end
+
 	vim.api.nvim_win_set_option(sg.windows, 'winfixwidth', true)
 	vim.api.nvim_win_set_option(sg.windows, 'wrap', false)
 	vim.api.nvim_win_set_option(sg.windows, 'cursorline', false)
@@ -180,7 +186,6 @@ end
 function sg.close()
 	vim.api.nvim_win_close(sg.windows, true)
 	sg.windows = nil
-	hl.sg_close_handle()
 end
 
 -- toggle
@@ -209,6 +214,13 @@ function sg.register_events()
 	vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
 		pattern = { "*.go" },
 		callback = event.enter
+	})
+	vim.api.nvim_create_autocmd({"BufWinLeave"},{
+		callback =function (data)
+			if vim.api.nvim_buf_get_option(data.buf,"filetype") == "structure-go" then
+				hl.sg_close_handle()
+			end
+		end
 	})
 end
 

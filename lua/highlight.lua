@@ -41,10 +41,15 @@ end
 function hl.stop_hl_cls()
 	if hl.cls_timer ~= nil then
 		hl.cls_timer:close()
+		hl.cls_timer = nil
 	end
 end
 
 function hl.start_hl_cls()
+	if hl.cls_timer ~= nil then
+		return
+	end
+
 	hl.cls_timer = vim.loop.new_timer()
 	hl.cls_timer:start(0, 1000, vim.schedule_wrap(function()
 		if vim.api.nvim_buf_get_option(0, "filetype") == "go" then
