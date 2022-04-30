@@ -13,7 +13,7 @@ I use some plugins that reflect the file struct, they support many languages, bu
 * jump from symbols.
 *
 *
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/iShot2022-04-29_2.png" width="350">
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/iShot2022-04-30_01.png" width="350">
 
 ## Try
 
@@ -24,7 +24,7 @@ I use some plugins that reflect the file struct, they support many languages, bu
 **gotags**
 ```go get -u github.com/jstemmer/gotags```
 
-```use "crusj/structrue-go.nvim"```
+```git clone https://github.com/crusj/structrue-go.nvim.git  ~/.local/share/nvim/site/pack/plugins/start/structure-go.nvim```
 
 ```require('structure-go').setup()```
 
