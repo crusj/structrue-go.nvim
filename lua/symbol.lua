@@ -1,16 +1,17 @@
 -- symbol parser
 local S = {
 	SymbolKind = {
-		n = { "interface", "❙ ", "guifg=Green" },
-		i = { "import", "⍺ ", "guifg=Gray" },
+		n = { "interface", {"並","❙ "}, "guifg=Green" },
+		i = { "import", {"並","⍺ "}, "guifg=Gray" },
 		m = { "method", "◨ ", "guifg=DarkGreen" },
-		f = { "function", "◧ ", "guifg=DarkBlue" },
-		w = { "field", "▪ ", "guifg=LightGray" },
-		c = { "const", "π ", "guifg=Orange" },
-		t = { "type", { "▱ ", "❏ " }, "guifg=Purple" },
-		v = { "variable", "◈ ", "guifg=Magenta" },
-		p = { "package", "⊞", "guifg=Red" },
-		F = { "filename", "", "guifg=Black" }
+		f = { "function", {"並","◧ "}, "guifg=DarkBlue" },
+		w = { "field", "▪ ", "guifg=DarkYellow" },
+		c = { "const", {"並","π "}, "guifg=Orange" },
+		t = { "type", {"並","▱ ", "❏ " }, "guifg=Purple" },
+		v = { "variable", {"並","◈ "}, "guifg=Magenta" },
+		p = { "package", {"","⊞"}, "guifg=Red" },
+		F = { "filename", {"",""}, "guifg=Black" },
+		e = { "field", "▪ ", "guifg=DarkYellow" },
 	}
 }
 

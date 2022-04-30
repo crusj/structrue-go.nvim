@@ -14,6 +14,7 @@ function tags.init()
 	tags.currentFileIMethods       = {}
 	tags.imports                   = {}
 	tags.currentFileTypes          = {} -- inclue struct and type
+	tags.currentFileSFields        = {}
 	tags.currentFileMethods        = {}
 	tags.othersFileTypes           = {}
 	tags.othersFileMethods         = {}
@@ -97,6 +98,8 @@ function tags:group(cut)
 			self.functions[#self.functions + 1] = cut
 		elseif cut.kind == "type" then
 			self.currentFileTypes[#self.currentFileTypes + 1] = cut
+		elseif cut.kind == "field" then
+			self.currentFileSFields[#self.currentFileSFields + 1] = cut
 		elseif cut.kind == "method" then
 			if cut.ntype ~= "" then -- interface method
 				self.currentFileIMethods[#self.currentFileIMethods + 1] = cut
@@ -156,55 +159,55 @@ function tags.flushFileNameToWindow()
 end
 
 function tags.flushPackageToWindow()
-	tags.re_line(symbol.SymbolKind.p[2] .. " Package: " .. tags.package.name, tags.package.filename, tags.package.line, "sg_p")
+	tags.re_line(symbol.SymbolKind.p[1] .. " Package: " .. tags.package.name, tags.package.filename, tags.package.line, "sg_p")
 end
 
 function tags.flushImportsToWindow()
 	if #tags.imports > 0 then
-		tags.re_line(symbol.SymbolKind.i[2] .. "Import", "", -1, "sg_i")
+		tags.re_line(symbol.SymbolKind.i[2][1] .. "Import", "", -1, "sg_i")
 
 		for _, cut in ipairs(tags.imports) do
-			tags.re_line("\t" .. symbol.SymbolKind.i[2] .. cut.name, cut.filename, cut.line, "sg_i")
+			tags.re_line("\t" .. symbol.SymbolKind.i[2][2] .. cut.name, cut.filename, cut.line, "sg_i")
 		end
 	end
 end
 
 function tags.flushConstToWindow()
 	if #tags.consts > 0 then
-		tags.re_line(symbol.SymbolKind.c[2] .. "Constant", "", -1, "sg_c")
+		tags.re_line(symbol.SymbolKind.c[2][1] .. "Constant", "", -1, "sg_c")
 
 		for _, cut in ipairs(tags.consts) do
-			tags.re_line("\t" .. symbol.SymbolKind.c[2] .. cut.name, cut.filename, cut.line, "sg_c")
+			tags.re_line("\t" .. symbol.SymbolKind.c[2][2] .. cut.name, cut.filename, cut.line, "sg_c")
 		end
 	end
 end
 
 function tags.flushVarsToWindow()
 	if #tags.vars >= 1 then
-		tags.re_line(symbol.SymbolKind.v[2] .. "Variable", "", -1, "sg_v")
+		tags.re_line(symbol.SymbolKind.v[2][1] .. "Variable", "", -1, "sg_v")
 
 		for _, cut in ipairs(tags.vars) do
-			tags.re_line("\t" .. symbol.SymbolKind.v[2] .. cut.name, cut.filename, cut.line, "sg_v")
+			tags.re_line("\t" .. symbol.SymbolKind.v[2][2] .. cut.name, cut.filename, cut.line, "sg_v")
 		end
 	end
 end
 
 function tags.flushFunctionsToWindow()
 	if #tags.functions >= 1 then
-		tags.re_line(symbol.SymbolKind.f[2] .. "Function", "", -1, "sg_f")
+		tags.re_line(symbol.SymbolKind.f[2][1] .. "Function", "", -1, "sg_f")
 
 		for _, cut in ipairs(tags.functions) do
-			tags.re_line("\t" .. symbol.SymbolKind.f[2] .. cut.name .. cut.signature .. cut.type, cut.filename, cut.line, "sg_f")
+			tags.re_line("\t" .. symbol.SymbolKind.f[2][2] .. cut.name .. cut.signature .. cut.type, cut.filename, cut.line, "sg_f")
 		end
 	end
 end
 
 function tags.flushInterfacesToWindow()
 	for _, icut in ipairs(tags.interfaces) do
-		tags.re_line(symbol.SymbolKind.n[2] .. icut.name, icut.filename, icut.line, "sg_i")
+		tags.re_line(symbol.SymbolKind.n[2][1] .. icut.name, icut.filename, icut.line, "sg_i")
 		for _, cut in ipairs(tags.currentFileIMethods) do
 			if cut.ntype == icut.name then
-				tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2], cut.name, cut.signature, cut.type), cut.filename, cut.line, "sg_m")
+				tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][2], cut.name, cut.signature, cut.type), cut.filename, cut.line, "sg_m")
 			end
 		end
 	end
@@ -212,7 +215,7 @@ end
 
 function tags.flushCurrentFileTypeAndAllMethodsToWindow()
 	for _, tcut in ipairs(tags.currentFileTypes) do
-		local icon = symbol.SymbolKind.t[2][2] -- struct icon
+		local icon = symbol.SymbolKind.t[2][3] -- struct icon
 		if tcut.type ~= "struct" then
 			icon = symbol.SymbolKind.t[2][1]
 		end
@@ -222,6 +225,13 @@ function tags.flushCurrentFileTypeAndAllMethodsToWindow()
 		end
 		tags.re_line(name, tcut.filename, tcut.line, "sg_t")
 
+		-- current file fields
+		for _, fcut in ipairs(tags.currentFileSFields) do
+			if fcut.ctype == tcut.name then
+				tags.re_line(string.format("\t %s%s %s", symbol.SymbolKind.w[2], fcut.name, fcut.type), fcut.filename, fcut.line, "sg_w")
+			end
+		end
+		-- current file methods
 		for _, mcut in ipairs(tags.currentFileMethods) do
 			if mcut.ctype == tcut.name then
 				tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2], mcut.name, mcut.signature, mcut.type), mcut.filename, mcut.line, "sg_m")
@@ -267,7 +277,7 @@ function tags.flushCurrentFileMethodsAndTypeToWindow()
 		-- search struct
 		for _, cut in ipairs(tags.othersFileTypes) do
 			if cut.name == sname then
-				local icon = symbol.SymbolKind.t[2][2] -- struct icon
+				local icon = symbol.SymbolKind.t[2][3] -- struct icon
 				if cut.type ~= "struct" then
 					icon = symbol.SymbolKind.t[2][1]
 				end
@@ -291,7 +301,7 @@ function tags.flushCurrentFileMethodsAndTypeToWindow()
 		end
 
 		for _, mcut in ipairs(methods) do
-			tags.re_line(string.format("\t %s%s %s %s", symbol.SymbolKind.m[2], mcut.name, mcut.signature, mcut.type), mcut.filename, mcut.line, "sg_m")
+			tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2], mcut.name, mcut.signature, mcut.type), mcut.filename, mcut.line, "sg_m")
 		end
 
 	end
