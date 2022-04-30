@@ -33,7 +33,7 @@ I use some plugins that reflect the file struct, they support many languages, bu
 
 ### Requirement
 
-**neovim**
+**nvim0.7**
 
 **gotags**
 
