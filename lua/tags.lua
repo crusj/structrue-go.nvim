@@ -311,7 +311,7 @@ function tags.flushCurrentFileTypeAndAllMethodsToWindow()
 		tags.re_line({ name, tcut.name }, tcut.filename, tcut.line, "sg_t")
 
 		if tags.fold_status[tags.current_buff_fullname][tcut.name] == true then
-			return
+			goto continue
 		end
 
 		for _, fcut in ipairs(tags.currentFileSFields) do
@@ -381,7 +381,7 @@ function tags.flushCurrentFileMethodsAndTypeToWindow()
 
 				tags.re_line({ name, cut.name }, cut.filename, cut.line, "sg_t")
 				if tags.fold_status[tags.current_buff_fullname][cut.name] == true then
-					return
+					goto continue
 				end
 
 				break
@@ -410,6 +410,7 @@ function tags.flushCurrentFileMethodsAndTypeToWindow()
 			end
 			tags.re_line({ string.format("\t %s%s%s %s", icon, mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, hl)
 		end
+		::continue::
 
 	end
 
@@ -477,12 +478,12 @@ function tags.fold_toggle()
 	if line == nil then
 		return
 	end
-	local symbol = tags.lines.names[line][2]
-	if symbol == nil then
+	local cursor_symbol = tags.lines.names[line][2]
+	if cursor_symbol == nil then
 		return
 	end
 
-	tags.fold_status[tags.current_buff_fullname][symbol] = not tags.fold_status[tags.current_buff_fullname][symbol]
+	tags.fold_status[tags.current_buff_fullname][cursor_symbol] = not tags.fold_status[tags.current_buff_fullname][cursor_symbol]
 	tags.lines                                           = { names = {}, lines = {}, lines_reverse = {}, fullnames = {}, highlights = {} }
 	tags.flushToWindow()
 	vim.cmd("execute  \"normal! " .. line .. "G;zz\"")
