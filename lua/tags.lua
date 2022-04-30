@@ -207,7 +207,7 @@ function tags.flushInterfacesToWindow()
 		tags.re_line(symbol.SymbolKind.n[2][1] .. icut.name, icut.filename, icut.line, "sg_i")
 		for _, cut in ipairs(tags.currentFileIMethods) do
 			if cut.ntype == icut.name then
-				tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][2], cut.name, cut.signature, cut.type), cut.filename, cut.line, "sg_m")
+				tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][2], cut.name, cut.signature, cut.type), cut.filename, cut.line, "sg_m_1")
 			end
 		end
 	end
