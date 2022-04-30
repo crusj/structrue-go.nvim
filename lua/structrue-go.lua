@@ -21,7 +21,8 @@ function sg.setup(config)
 	symbol.setup(sg.config)
 	hl.init()
 	tags.setup(sg.config)
-
+	sg.global_key_binds()
+	
 end
 
 -- merge user defined config
@@ -83,7 +84,7 @@ function sg.merge_config(config)
 			},
 		},
 		keymap = {
-			toggle = "<leader>m", -- toggle structure-go window
+			toggle = "<leader>m", -- toggle structrue-go window
 			show_others_method_toggle = "H", -- show or hidden the methods of struct whose not in current file
 			symbol_jump = "<CR>", -- jump to symbol file under cursor
 			fold_toggle = "\\z"
@@ -154,11 +155,12 @@ function sg.open()
 
 	if sg.bufs == nil then
 		sg.bufs = vim.api.nvim_create_buf(false, true)
-		sg.key_binds()
+		sg.buf_key_binds()
 
-		vim.api.nvim_buf_set_name(sg.bufs, 'structure')
-		vim.api.nvim_buf_set_option(sg.bufs, 'filetype', 'structure-go')
+		vim.api.nvim_buf_set_name(sg.bufs, 'structrue')
+		vim.api.nvim_buf_set_option(sg.bufs, 'filetype', 'structrue-go')
 		vim.api.nvim_win_set_buf(sg.windows, sg.bufs)
+		sg.buf_key_binds()
 	else
 		vim.api.nvim_win_set_buf(sg.windows, sg.bufs)
 	end
@@ -176,6 +178,10 @@ function sg.open()
 	vim.api.nvim_win_set_option(sg.windows, 'wrap', false)
 	vim.api.nvim_win_set_option(sg.windows, 'cursorline', false)
 	vim.api.nvim_win_set_width(sg.windows, sg.buff_width)
+
+	if sg.finish_buf_key_binds == false then
+		sg.finish_buf_key_binds = true
+	end
 
 	tags.run(sg.buff, sg.bufs, sg.windowf, sg.windows)
 
@@ -202,11 +208,14 @@ function sg.toggle()
 	end
 end
 
-function sg.key_binds()
-	vim.api.nvim_set_keymap("n", sg.config.keymap.toggle, ":lua require'structure-go'.toggle()<cr>", { silent = true })
-	vim.api.nvim_buf_set_keymap(sg.bufs, "n", sg.config.keymap.symbol_jump, ":lua require'structure-go'.jump()<cr>", { silent = true })
-	vim.api.nvim_buf_set_keymap(sg.bufs, "n", sg.config.keymap.show_others_method_toggle, ":lua require'structure-go'.hide_others_methods_toggle()<cr>", { silent = true })
-	vim.api.nvim_buf_set_keymap(sg.bufs, "n", sg.config.keymap.fold_toggle, ":lua require'structure-go'.fold_toggle()<cr>", { silent = true })
+function sg.buf_key_binds()
+	vim.api.nvim_buf_set_keymap(sg.bufs, "n", sg.config.keymap.symbol_jump, ":lua require'structrue-go'.jump()<cr>", { silent = true })
+	vim.api.nvim_buf_set_keymap(sg.bufs, "n", sg.config.keymap.show_others_method_toggle, ":lua require'structrue-go'.hide_others_methods_toggle()<cr>", { silent = true })
+	vim.api.nvim_buf_set_keymap(sg.bufs, "n", sg.config.keymap.fold_toggle, ":lua require'structrue-go'.fold_toggle()<cr>", { silent = true })
+end
+
+function sg.global_key_binds()
+	vim.api.nvim_set_keymap("n", sg.config.keymap.toggle, ":lua require'structrue-go'.toggle()<cr>", { silent = true })
 end
 
 -- register events
@@ -215,9 +224,9 @@ function sg.register_events()
 		pattern = { "*.go" },
 		callback = event.enter
 	})
-	vim.api.nvim_create_autocmd({"BufWinLeave"},{
-		callback =function (data)
-			if vim.api.nvim_buf_get_option(data.buf,"filetype") == "structure-go" then
+	vim.api.nvim_create_autocmd({ "BufWinLeave" }, {
+		callback = function(data)
+			if vim.api.nvim_buf_get_option(data.buf, "filetype") == "structrue-go" then
 				hl.sg_close_handle()
 			end
 		end

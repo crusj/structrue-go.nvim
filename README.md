@@ -29,6 +29,8 @@ I use some plugins that reflect the file struct, they support many languages, bu
 
 ### Requirement
 
+**neovim**
+
 **gotags**
 
 ```shell
@@ -36,8 +38,19 @@ go get -u github.com/jstemmer/gotags
 ```
 
 ### Install
+
+**Packer**
+
+```lua
+use {
+	'crusj/structrue-go.nvim',
+	branch = "main"
+}
+```
+
+**Or**
 ```shell
-git clone https://github.com/crusj/structrue-go.nvim.git  ~/.local/share/nvim/site/pack/plugins/start/structure-go.nvim
+git clone https://github.com/crusj/structrue-go.nvim.git  ~/.local/share/nvim/site/pack/plugins/start/structrue-go.nvim
 ```
 
 ## Usage
@@ -45,7 +58,7 @@ git clone https://github.com/crusj/structrue-go.nvim.git  ~/.local/share/nvim/si
 ### Start
 
 ```lua
-require"structure-go".setup({})
+require"structrue-go".setup({})
 ```
 
 ### Default config
@@ -130,10 +143,10 @@ local default_config = {
 
 | Operation                | Default Keymap                                                 | Description                                                   | 
 | -------------------------|---------------------------------------------------------------|--------------------------------------------------------------| 
-| toggle symbols           | ```<leader>m```   ```:lua require'structure-go'.toggle()```               | toggle structure-go                                           |
-| show_others_method_toggle| ```H```        ```:lua require'structure-go'.hide_others_methods_toggle()```  | show or hidden the methods of struct whose not in current file|
-| symbol_jump              | ```CR```   ```:lua require'structure-go'.jump()```  | jump to the symbol file under cursor                          |
-| fold_toggle              | ```<leader>z```     ```:lua require'structure-go'.fold_toggle()```         | toggle fold                                                   |
+| toggle symbols           | ```<leader>m```   ```:lua require'structrue-go'.toggle()```               | toggle structure-go                                           |
+| show_others_method_toggle| ```H```        ```:lua require'structrue-go'.hide_others_methods_toggle()```  | show or hidden the methods of struct whose not in current file|
+| symbol_jump              | ```CR```   ```:lua require'structrue-go'.jump()```  | jump to the symbol file under cursor                          |
+| fold_toggle              | ```<leader>z```     ```:lua require'structrue-go'.fold_toggle()```         | toggle fold                                                   |
 
 
 ## TODO

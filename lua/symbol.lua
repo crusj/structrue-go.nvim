@@ -1,5 +1,6 @@
 -- symbol parser
 local S = {}
+require("split")
 
 function S.setup(config)
 	S.SymbolKind = {
