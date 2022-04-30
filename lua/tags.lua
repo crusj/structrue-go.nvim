@@ -234,7 +234,7 @@ function tags.flushCurrentFileTypeAndAllMethodsToWindow()
 		-- current file methods
 		for _, mcut in ipairs(tags.currentFileMethods) do
 			if mcut.ctype == tcut.name then
-				tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2], mcut.name, mcut.signature, mcut.type), mcut.filename, mcut.line, "sg_m")
+				tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2], mcut.name, mcut.signature, mcut.type), mcut.filename, mcut.line, "sg_m_1")
 			end
 		end
 
@@ -244,7 +244,7 @@ function tags.flushCurrentFileTypeAndAllMethodsToWindow()
 
 		for _, mcut in ipairs(tags.othersFileMethods) do
 			if mcut.ctype == tcut.name then
-				tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2], mcut.name, mcut.signature, mcut.type), mcut.filename, mcut.line, "sg_m")
+				tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2], mcut.name, mcut.signature, mcut.type), mcut.filename, mcut.line, "sg_m_2")
 			end
 		end
 		::continue::
@@ -281,7 +281,7 @@ function tags.flushCurrentFileMethodsAndTypeToWindow()
 				if cut.type ~= "struct" then
 					icon = symbol.SymbolKind.t[2][1]
 				end
-				local name = cut.name
+				local name = icon..cut.name
 				if cut.type ~= "struct" then
 					name = string.format("%s%s(%s)", icon, cut.name, cut.type)
 				end
@@ -292,7 +292,9 @@ function tags.flushCurrentFileMethodsAndTypeToWindow()
 		end
 
 		-- find not in current file's struct's methods
+		local others_method_start_index = -1
 		if not tags.hide_others_method_status then
+			others_method_start_index = #methods + 1
 			for _, cut in ipairs(tags.othersFileMethods) do
 				if cut.ctype == sname then
 					methods[#methods + 1] = cut
@@ -300,8 +302,12 @@ function tags.flushCurrentFileMethodsAndTypeToWindow()
 			end
 		end
 
-		for _, mcut in ipairs(methods) do
-			tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2], mcut.name, mcut.signature, mcut.type), mcut.filename, mcut.line, "sg_m")
+		for index, mcut in ipairs(methods) do
+			local hl = "sg_m_1"
+			if index == others_method_start_index - 1 then
+				hl = "sg_m_2"
+			end
+			tags.re_line(string.format("\t %s%s%s %s", symbol.SymbolKind.m[2], mcut.name, mcut.signature, mcut.type), mcut.filename, mcut.line, hl)
 		end
 
 	end

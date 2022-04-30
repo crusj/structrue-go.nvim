@@ -1,16 +1,16 @@
 -- symbol parser
 local S = {
 	SymbolKind = {
-		n = { "interface", {"並","❙ "}, "guifg=Green" },
-		i = { "import", {"並","⍺ "}, "guifg=Gray" },
-		m = { "method", "◨ ", "guifg=DarkGreen" },
-		f = { "function", {"並","◧ "}, "guifg=DarkBlue" },
+		n = { "interface", { "並", "❙ " }, "guifg=Green" },
+		i = { "import", { "並", "⍺ " }, "guifg=Gray" },
+		m = { "method", "◨ ", { "guifg=DarkGreen", "guifg=LightGreen" } },
+		f = { "function", { "並", "◧ " }, "guifg=DarkBlue" },
 		w = { "field", "▪ ", "guifg=DarkYellow" },
-		c = { "const", {"並","π "}, "guifg=Orange" },
-		t = { "type", {"並","▱ ", "❏ " }, "guifg=Purple" },
-		v = { "variable", {"並","◈ "}, "guifg=Magenta" },
-		p = { "package", {"","⊞"}, "guifg=Red" },
-		F = { "filename", {"",""}, "guifg=Black" },
+		c = { "const", { "並", "π " }, "guifg=Orange" },
+		t = { "type", { "並", "▱ ", "❏ " }, "guifg=Purple" },
+		v = { "variable", { "並", "◈ " }, "guifg=Magenta" },
+		p = { "package", { "", "⊞" }, "guifg=Red" },
+		F = { "filename", { "", "" }, "guifg=Black" },
 		e = { "field", "▪ ", "guifg=DarkYellow" },
 	}
 }

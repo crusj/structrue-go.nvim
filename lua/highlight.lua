@@ -24,8 +24,15 @@ end
 
 function hl.register_namespace()
 	for k, v in pairs(symbol.SymbolKind) do
-		vim.cmd(string.format("highlight %s %s", "sg_" .. k, v[3]))
-		ns["sg_" .. k] = vim.api.nvim_create_namespace(v[3])
+		if k == "m" then
+			vim.cmd(string.format("highlight %s_1 %s", "sg_" .. k, v[3][1]))
+			ns["sg_" .. k .. "_1"] = vim.api.nvim_create_namespace(v[3][1])
+			vim.cmd(string.format("highlight %s_2 %s", "sg_" .. k, v[3][2]))
+			ns["sg_" .. k .. "_2"] = vim.api.nvim_create_namespace(v[3][2])
+		else
+			vim.cmd(string.format("highlight %s %s", "sg_" .. k, v[3]))
+			ns["sg_" .. k] = vim.api.nvim_create_namespace(v[3])
+		end
 	end
 	vim.cmd("highlight sg_cls guibg=Grey guifg=White")
 	ns["sg_cls"] = vim.api.nvim_create_namespace("guibg=Grey guifg=White")
