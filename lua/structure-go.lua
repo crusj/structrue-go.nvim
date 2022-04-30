@@ -141,7 +141,11 @@ end
 
 -- open
 function sg.open()
-	sg.buff = vim.api.nvim_get_current_buf()
+	local buff = vim.api.nvim_get_current_buf()
+	if vim.api.nvim_buf_get_option(buff, "filetype") ~= "go" then
+		return
+	end
+	sg.buff = buff
 	sg.windowf = vim.api.nvim_get_current_win()
 
 	sg.create_window()
@@ -194,7 +198,7 @@ function sg.toggle()
 end
 
 function sg.key_binds()
-	vim.api.nvim_buf_set_keymap(sg.bufs, "n", sg.config.keymap.toggle, ":lua require'structure-go'.toggle()<cr>", { silent = true })
+	vim.api.nvim_set_keymap("n", sg.config.keymap.toggle, ":lua require'structure-go'.toggle()<cr>", { silent = true })
 	vim.api.nvim_buf_set_keymap(sg.bufs, "n", sg.config.keymap.symbol_jump, ":lua require'structure-go'.jump()<cr>", { silent = true })
 	vim.api.nvim_buf_set_keymap(sg.bufs, "n", sg.config.keymap.show_others_method_toggle, ":lua require'structure-go'.hide_others_methods_toggle()<cr>", { silent = true })
 	vim.api.nvim_buf_set_keymap(sg.bufs, "n", sg.config.keymap.fold_toggle, ":lua require'structure-go'.fold_toggle()<cr>", { silent = true })
@@ -218,8 +222,8 @@ function sg.hide_others_methods_toggle()
 	tags.hide_others_methods_toggle()
 end
 
-
 function sg.fold_toggle()
 	tags.fold_toggle()
 end
+
 return sg
