@@ -63,7 +63,8 @@ function config.setup(user_config)
 			toggle = "<leader>m", -- toggle structrue-go window
 			show_others_method_toggle = "H", -- show or hidden the methods of struct whose not in current file
 			symbol_jump = "<CR>", -- jump to symbol file under cursor
-			fold_toggle = "\\z"
+			fold_toggle = "\\z",
+			refresh = "R" -- refresh symbols
 		},
 		fold = { -- fold symbols
 			import = true,

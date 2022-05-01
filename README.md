@@ -129,7 +129,8 @@ local default_config = {
 		toggle = "<leader>m", -- toggle structure-go window
 		show_others_method_toggle = "H", -- show or hidden the methods of struct whose not in current file
 		symbol_jump = "<CR>", -- jump to then symbol file under cursor
-		fold_toggle = "\\z"
+		fold_toggle = "\\z",
+		refresh = "R" -- refresh symbols
 	},
 	fold = { -- fold symbols
 		import = true,
@@ -150,6 +151,7 @@ local default_config = {
 | toggle symbols           | ```<leader>m```   ```:lua require'structrue-go'.toggle()```               | toggle structure-go                                           |
 | show_others_method_toggle| ```H```        ```:lua require'structrue-go'.hide_others_methods_toggle()```  | show or hidden the methods of struct whose not in current file|
 | symbol_jump              | ```CR```   ```:lua require'structrue-go'.jump()```  | jump to the symbol file under cursor                          |
+| refresh             | ```R```   ```:lua require'structrue-go'.refresh()```  | refresh symbols                          |
 | fold_toggle              | ```<leader>z```     ```:lua require'structrue-go'.fold_toggle()```         | toggle fold                                                   |
 
 

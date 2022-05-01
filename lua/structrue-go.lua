@@ -47,7 +47,6 @@ function sg.open()
 
 	if sg.bufs == nil then
 		sg.bufs = vim.api.nvim_create_buf(false, true)
-		sg.buf_key_binds()
 
 		vim.api.nvim_buf_set_name(sg.bufs, 'structrue')
 		vim.api.nvim_buf_set_option(sg.bufs, 'filetype', 'structrue-go')
@@ -100,10 +99,18 @@ function sg.toggle()
 	end
 end
 
+function sg.refresh()
+	local buff = tags.buff
+	tags.init()
+	tags.buff = buff
+	tags.generate(tags.get_current_buff_path())
+end
+
 function sg.buf_key_binds()
 	vim.api.nvim_buf_set_keymap(sg.bufs, "n", config.keymap.symbol_jump, ":lua require'structrue-go'.jump()<cr>", { silent = true })
 	vim.api.nvim_buf_set_keymap(sg.bufs, "n", config.keymap.show_others_method_toggle, ":lua require'structrue-go'.hide_others_methods_toggle()<cr>", { silent = true })
 	vim.api.nvim_buf_set_keymap(sg.bufs, "n", config.keymap.fold_toggle, ":lua require'structrue-go'.fold_toggle()<cr>", { silent = true })
+	vim.api.nvim_buf_set_keymap(sg.bufs, "n", config.keymap.refresh, ":lua require'structrue-go'.refresh()<cr>", { silent = true })
 end
 
 -- register events
