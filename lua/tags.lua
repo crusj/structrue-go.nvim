@@ -1,6 +1,7 @@
 local symbol = require('symbol')
 local env = require("env")
 local ns = require("namespace")
+local w = require("window")
 
 local tags = {
 	fold_status = {}
@@ -34,20 +35,15 @@ function tags.init()
 end
 
 -- run tags parse and write to bufs
-function tags.run(buff, bufs, windowf, windows)
+function tags.run()
 	tags.init()
-
-	tags.buff = buff
-	tags.bufs = bufs
-	tags.windowf = windowf
-	tags.windows = windows
 	local file_path = tags.get_current_buff_path()
 	tags.generate(file_path)
 	tags.current_buff_name = string.sub(tags.current_buff_fullname, #file_path + 2)
 end
 
 function tags.get_current_buff_path()
-	tags.current_buff_fullname = vim.api.nvim_buf_get_name(tonumber(tags.buff))
+	tags.current_buff_fullname = vim.api.nvim_buf_get_name(tonumber(w.buff))
 	return (string.gsub(tags.current_buff_fullname, "/[^/]+$", ""))
 end
 
@@ -125,7 +121,7 @@ function tags.flushToWindow()
 		tags.fold_status[tags.current_buff_fullname] = {}
 	end
 
-	vim.api.nvim_buf_set_option(tags.bufs, "modifiable", true)
+	vim.api.nvim_buf_set_option(w.bufs, "modifiable", true)
 
 	-- parse filename
 	tags.parse_file_name()
@@ -148,21 +144,21 @@ function tags.flushToWindow()
 
 	tags.set_symbols_to_buf()
 	tags.highlight_lines()
-	vim.api.nvim_buf_set_option(tags.bufs, "modifiable", false)
+	vim.api.nvim_buf_set_option(w.bufs, "modifiable", false)
 end
 
 function tags.set_symbols_to_buf()
-	vim.api.nvim_buf_set_lines(tags.bufs, 0, -1, false, {})
+	vim.api.nvim_buf_set_lines(w.bufs, 0, -1, false, {})
 	local names = {}
 	for _, v in ipairs(tags.lines.names) do
 		table.insert(names, v[1])
 	end
-	vim.api.nvim_buf_set_lines(tags.bufs, 0, #names, false, names)
+	vim.api.nvim_buf_set_lines(w.bufs, 0, #names, false, names)
 end
 
 function tags.highlight_lines()
 	for index, hl in ipairs(tags.lines.highlights) do
-		vim.api.nvim_buf_add_highlight(tags.bufs, ns[hl], hl, index - 1, 0, -1)
+		vim.api.nvim_buf_add_highlight(w.bufs, ns[hl], hl, index - 1, 0, -1)
 	end
 end
 
@@ -503,7 +499,7 @@ end
 function tags.jump(line)
 	local jump_line = tags.lines.lines[line]
 	if tags.lines.fullnames[line] ~= "" then
-		vim.api.nvim_set_current_win(tags.windowf)
+		vim.api.nvim_set_current_win(w.bufw)
 		if tags.lines.fullnames[line] ~= tags.current_buff_fullname then
 			vim.cmd("e " .. tags.lines.fullnames[line])
 		end
@@ -539,7 +535,7 @@ function tags.refresh()
 	local buf_name = vim.api.nvim_buf_get_name(buf)
 	if buf_name ~= tags.current_buff_fullname then
 		tags.init()
-		tags.buff = buf
+		w.buff = buf
 		local file_path = tags.get_current_buff_path()
 		tags.generate(file_path)
 	end

@@ -26,6 +26,10 @@ I use some plugins that reflect the file struct, they support many languages, bu
 
 <img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature4.png" width="350">
 
+**Preview**
+
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature5.png" width="350">
+
 **Configurable highlights, icons, shortcuts**
 
 
@@ -131,6 +135,8 @@ local default_config = {
 		symbol_jump = "<CR>", -- jump to then symbol file under cursor
 		fold_toggle = "\\z",
 		refresh = "R" -- refresh symbols
+		preview_open = "P", -- preview  symbol context open
+		preview_close = "\\p" -- preview  symbol context close
 	},
 	fold = { -- fold symbols
 		import = true,
@@ -153,8 +159,7 @@ local default_config = {
 | symbol_jump              | ```CR```   ```:lua require'structrue-go'.jump()```  | jump to the symbol file under cursor                          |
 | refresh             | ```R```   ```:lua require'structrue-go'.refresh()```  | refresh symbols                          |
 | fold_toggle              | ```<leader>z```     ```:lua require'structrue-go'.fold_toggle()```         | toggle fold                                                   |
+| preview_open              | ```P```     ```:lua require'structrue-go'.preview_open```         | preview symbol context                                                   |
+| preview_close              | ```\p```     ```:lua require'structrue-go'.preview_close```         | close preview symbol context                                                   |
 
 
-## TODO
-
-* Add Preview

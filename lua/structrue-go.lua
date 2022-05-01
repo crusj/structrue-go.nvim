@@ -4,31 +4,18 @@ local tags = require("tags")
 local ev = require("event")
 local symbol = require("symbol")
 local env = require("env")
+local w = require("window")
 
-local sg = {
-	buff = nil,
-	bufs = nil,
-	windows = nil,
-	buff_width = 0,
-}
-
-local config = {}
-
--- create window
-function sg.create_window()
-	sg.buff_width = math.floor(vim.api.nvim_win_get_width(0) / 4)
-	vim.cmd('botright vs')
-end
+local sg = {}
 
 function sg.setup(user_config)
 	c.setup(user_config)
-	config = c.get_data()
-
 	ev.setup() -- event
 	env.setup()
 	symbol.setup()
 	hl.setup()
 	tags.setup()
+	w.setup()
 end
 
 -- open
@@ -37,62 +24,30 @@ function sg.open()
 	if vim.api.nvim_buf_get_option(buff, "filetype") ~= "go" then
 		return
 	end
-	sg.buff = buff
-	sg.windowf = vim.api.nvim_get_current_win()
 
-	sg.create_window()
-	sg.windows = vim.api.nvim_get_current_win()
+	w.buff = buff
+	w.bufw = vim.api.nvim_get_current_win()
+	w.create_structrue_window()
 
-
-
-	if sg.bufs == nil then
-		sg.bufs = vim.api.nvim_create_buf(false, true)
-
-		vim.api.nvim_buf_set_name(sg.bufs, 'structrue')
-		vim.api.nvim_buf_set_option(sg.bufs, 'filetype', 'structrue-go')
-		vim.api.nvim_win_set_buf(sg.windows, sg.bufs)
-		sg.buf_key_binds()
-	else
-		vim.api.nvim_win_set_buf(sg.windows, sg.bufs)
-	end
-
-	if config.number == "nu" then
-		vim.api.nvim_win_set_option(sg.windows, 'number', true)
-	elseif config.number == "rnu" then
-		vim.api.nvim_win_set_option(sg.windows, 'relativenumber', true)
-	else
-		vim.api.nvim_win_set_option(sg.windows, 'relativenumber', false)
-		vim.api.nvim_win_set_option(sg.windows, 'number', false)
-	end
-
-	vim.api.nvim_win_set_option(sg.windows, 'winfixwidth', true)
-	vim.api.nvim_win_set_option(sg.windows, 'wrap', false)
-	vim.api.nvim_win_set_option(sg.windows, 'cursorline', false)
-	vim.api.nvim_win_set_width(sg.windows, sg.buff_width)
-
-	if sg.finish_buf_key_binds == false then
-		sg.finish_buf_key_binds = true
-	end
-
-	tags.run(sg.buff, sg.bufs, sg.windowf, sg.windows)
+	tags.run()
 
 	hl.sg_open_handle()
 end
 
 -- close
 function sg.close()
-	vim.api.nvim_win_close(sg.windows, true)
-	sg.windows = nil
+	vim.api.nvim_win_close(w.bufsw, true)
+	w.bufsw = nil
 end
 
 -- toggle
 function sg.toggle()
-	if sg.windows == nil then
+	if w.bufsw == nil then
 		sg.open()
 		return
 	end
 
-	if vim.api.nvim_win_is_valid(sg.windows) then
+	if vim.api.nvim_win_is_valid(w.bufsw) then
 		sg.close()
 	else
 		sg.open()
@@ -100,20 +55,11 @@ function sg.toggle()
 end
 
 function sg.refresh()
-	local buff = tags.buff
+	local buff = w.buff
 	tags.init()
-	tags.buff = buff
+	w.buff = buff
 	tags.generate(tags.get_current_buff_path())
 end
-
-function sg.buf_key_binds()
-	vim.api.nvim_buf_set_keymap(sg.bufs, "n", config.keymap.symbol_jump, ":lua require'structrue-go'.jump()<cr>", { silent = true })
-	vim.api.nvim_buf_set_keymap(sg.bufs, "n", config.keymap.show_others_method_toggle, ":lua require'structrue-go'.hide_others_methods_toggle()<cr>", { silent = true })
-	vim.api.nvim_buf_set_keymap(sg.bufs, "n", config.keymap.fold_toggle, ":lua require'structrue-go'.fold_toggle()<cr>", { silent = true })
-	vim.api.nvim_buf_set_keymap(sg.bufs, "n", config.keymap.refresh, ":lua require'structrue-go'.refresh()<cr>", { silent = true })
-end
-
--- register events
 
 -- jump from symbols
 function sg.jump()
@@ -127,6 +73,16 @@ end
 
 function sg.fold_toggle()
 	tags.fold_toggle()
+end
+
+function sg.preview_open()
+	local line = vim.api.nvim_exec("echo line('.')", true)
+	local buff_line = tags.lines.lines[tonumber(line)]
+	w.preview_open(buff_line)
+end
+
+function sg.preview_close()
+	w.preview_close()
 end
 
 return sg

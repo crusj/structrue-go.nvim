@@ -1,6 +1,7 @@
 local tags = require('tags')
 local symbol = require("symbol")
 local ns = require("namespace")
+local w = require("window")
 
 local hl = {
 	last_cls_line = -1,
@@ -75,7 +76,7 @@ function hl.start_hl_cls()
 				local tmp_line = line - 2
 				local hl_buff_line = -1
 				while tmp_line > 0 do
-					local prev_line_start_str = vim.api.nvim_buf_get_text(tags.buff, tmp_line, 0, tmp_line, 4, {})[1]
+					local prev_line_start_str = vim.api.nvim_buf_get_text(w.buff, tmp_line, 0, tmp_line, 4, {})[1]
 					local no_space_str = string.gsub(prev_line_start_str, "%s", "")
 					if string.gsub(string.sub(prev_line_start_str, 1, 1), "%s", "") == "" then
 						goto continue
@@ -101,12 +102,12 @@ function hl.start_hl_cls()
 
 			if hl.last_cls_line ~= -1 then
 				local clear_line = hl.last_cls_line
-				vim.api.nvim_buf_clear_namespace(tonumber(tags.bufs), ns["sg_cls"], clear_line - 1, clear_line)
+				vim.api.nvim_buf_clear_namespace(tonumber(w.bufs), ns["sg_cls"], clear_line - 1, clear_line)
 				hl.last_cls_line = -1
 			end
 
 			if hl_bufs_line ~= -1 then
-				vim.api.nvim_buf_add_highlight(tonumber(tags.bufs), ns["sg_cls"], "sg_cls", hl_bufs_line - 1, 0, -1)
+				vim.api.nvim_buf_add_highlight(tonumber(w.bufs), ns["sg_cls"], "sg_cls", hl_bufs_line - 1, 0, -1)
 				-- rember last line
 				hl.last_cls_line = hl_bufs_line
 			end

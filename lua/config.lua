@@ -64,7 +64,9 @@ function config.setup(user_config)
 			show_others_method_toggle = "H", -- show or hidden the methods of struct whose not in current file
 			symbol_jump = "<CR>", -- jump to symbol file under cursor
 			fold_toggle = "\\z",
-			refresh = "R" -- refresh symbols
+			refresh = "R", -- refresh symbols
+			preview_open = "P", -- preview  symbol toggle
+			preview_close = "\\p" -- preview  symbol toggle
 		},
 		fold = { -- fold symbols
 			import = true,
@@ -113,9 +115,9 @@ function config.setup(user_config)
 		::continue::
 	end
 end
+
 function config.get_data()
 	return config.data
 end
 
 return config
-

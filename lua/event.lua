@@ -3,7 +3,9 @@ local hl = require("highlight")
 
 
 local config = {}
-local event = {}
+local event = {
+	previewf = nil
+}
 
 function event.setup()
     config = require("config").get_data()
@@ -31,6 +33,7 @@ end
 
 function event.global_key_binds()
 	vim.api.nvim_set_keymap("n", config.keymap.toggle, ":lua require'structrue-go'.toggle()<cr>", { silent = true })
+	vim.api.nvim_set_keymap("n", config.keymap.preview_close, ":lua require'structrue-go'.preview_close()<cr>", { silent = true })
 end
 
 return event
