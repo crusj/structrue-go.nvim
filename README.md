@@ -28,7 +28,7 @@ I use some plugins that reflect the file struct, they support many languages, bu
 
 **Preview**
 
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature5.png" width="350">
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature5.png" width="850">
 
 **Configurable highlights, icons, shortcuts**
 
