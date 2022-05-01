@@ -273,20 +273,43 @@ function tags.parse_interface()
 			tags.fold_status[tags.current_buff_fullname][icut.name] = config.fold.interface
 		end
 
-		local fold_icon = config.fold_open_icon
+		local show_methods = true
 		if tags.fold_status[tags.current_buff_fullname][icut.name] == true then
-			fold_icon = config.fold_close_icon
+			show_methods = false
 		end
 
-		tags.re_line({ fold_icon .. icut.name, icut.filename, icut.name }, icut.filename, icut.line, "sg_i")
-
-		if tags.fold_status[tags.current_buff_fullname][icut.name] == true then
-			return
-		end
+		local i_methods = {}
+		local exists_methods = false -- find methods  exists
 
 		for _, cut in ipairs(tags.current_file_i_methods) do
 			if cut.ntype == icut.name then
-				tags.re_line({ string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][1], cut.name, cut.signature, cut.type) }, cut.filename, cut.line, "sg_m_1")
+				if show_methods == false then
+					exists_methods = true
+					break
+				else
+					table.insert(i_methods, {
+						{ string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][1], cut.name, cut.signature, cut.type) },
+						cut.filename,
+						cut.line,
+						"sg_m_1"
+					})
+				end
+			end
+		end
+
+		local i_icon = symbol.SymbolKind.n[2]
+
+		if show_methods == false and exists_methods then -- hide methods and exists methods
+			i_icon = config.fold_close_icon
+		elseif show_methods == true and #i_methods > 0 then -- show methods and methods least 1
+			i_icon = config.fold_open_icon
+		end
+
+		tags.re_line({ i_icon .. icut.name, icut.name }, icut.filename, icut.line, "sg_n")
+
+		if show_methods then
+			for _, item in ipairs(i_methods) do
+				tags.re_line(item[1], item[2], item[3], item[4])
 			end
 		end
 	end
@@ -299,32 +322,43 @@ function tags.parse_c_t_m()
 			tags.fold_status[tags.current_buff_fullname][tcut.name] = config.fold.type
 		end
 
-		local fold_icon = config.fold_open_icon
-		if tags.fold_status[tags.current_buff_fullname][tcut.name] == true then
-			fold_icon = config.fold_close_icon
+		local members = {}
+		local show_members = false
+		if tags.fold_status[tags.current_buff_fullname][tcut.name] == false then
+			show_members = true
 		end
 
-		local name = fold_icon .. tcut.name
-		if tcut.type ~= "struct" then
-			name = string.format("%s%s(%s)", fold_icon, tcut.name, tcut.type)
-		end
-		tags.re_line({ name, tcut.name }, tcut.filename, tcut.line, "sg_t")
-
-		if tags.fold_status[tags.current_buff_fullname][tcut.name] == true then
-			goto continue
-		end
+		local exists_members = false
 
 		for _, fcut in ipairs(tags.current_file_s_fields) do
 			if fcut.ctype == tcut.name then
-				tags.re_line({ string.format("\t %s%s %s", symbol.SymbolKind.w[2], fcut.name, fcut.type) }, fcut.filename, fcut.line, "sg_w")
+				if show_members == true then
+					table.insert(members, { { string.format("\t %s%s %s", symbol.SymbolKind.w[2], fcut.name, fcut.type) }, fcut.filename, fcut.line, "sg_w" })
+				else
+					exists_members = true
+					break
+				end
 			end
+		end
+
+		if show_members == false and exists_members == true then
+			goto continue
 		end
 
 		-- current file methods
 		for _, mcut in ipairs(tags.current_file_methods) do
 			if mcut.ctype == tcut.name then
-				tags.re_line({ string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][1], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_1")
+				if show_members == true then
+					table.insert(members, { { string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][1], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_1" })
+				else
+					exists_members = true
+					break
+				end
 			end
+		end
+
+		if show_members == false and exists_members == true then
+			goto continue
 		end
 
 		if tags.hide_others_method_status then
@@ -333,17 +367,44 @@ function tags.parse_c_t_m()
 
 		for _, mcut in ipairs(tags.others_file_method) do
 			if mcut.ctype == tcut.name then
-				tags.re_line({ string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][2], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_2")
+				if show_members == true then
+					table.insert(members, { { string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][2], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_2" })
+				else
+					exists_members = true
+					break
+				end
 			end
 		end
+
 		::continue::
+		local icon = symbol.SymbolKind.t[2][2]
+		if tcut.type ~= "struct" then
+			icon = symbol.SymbolKind.t[2][1]
+		end
+
+		if show_members == false and exists_members then -- hide members and exists members
+			icon = config.fold_close_icon
+		elseif show_members == true and #members > 0 then -- show members and members least 1
+			icon = config.fold_open_icon
+		end
+
+		local name = icon .. tcut.name
+		if tcut.type ~= "struct" then
+			name = string.format("%s%s(%s)", icon, tcut.name, tcut.type)
+		end
+
+		tags.re_line({ name, tcut.name }, tcut.filename, tcut.line, "sg_t")
+
+		for _, item in ipairs(members) do
+			tags.re_line(item[1], item[2], item[3], item[4])
+		end
 	end
 end
 
 -- parse current methods type
 function tags.parse_c_m_t()
-	-- struct methods
 	local sm = {}
+	-- find methods whose struct not in current file.
 	for _, mcut in ipairs(tags.current_file_methods) do
 		local find = false
 		for _, scut in ipairs(tags.current_file_types) do
@@ -365,57 +426,78 @@ function tags.parse_c_m_t()
 
 	for sname, methods in pairs(sm) do
 		-- search struct
+		if tags.fold_status[tags.current_buff_fullname][sname] == nil then
+			tags.fold_status[tags.current_buff_fullname][sname] = config.fold.type
+		end
+
+		local show_members = false
+		if tags.fold_status[tags.current_buff_fullname][sname] == false then
+			show_members = true
+		end
+
+		local exists_members = #methods > 0
+		local tcut = nil
+		-- find not in current file's struct's methods
+		local others_method_start_index = -1
+
 		for _, cut in ipairs(tags.others_file_type) do
-			if tags.fold_status[tags.current_buff_fullname][cut.name] == nil then
-				tags.fold_status[tags.current_buff_fullname][cut.name] = config.fold.type
-			end
-
 			if cut.name == sname then
-				local fold_icon = config.fold_open_icon
-				if tags.fold_status[tags.current_buff_fullname][cut.name] == true then
-					fold_icon = config.fold_close_icon
-				end
-
-				local name = fold_icon .. cut.name
-				if cut.type ~= "struct" then
-					name = string.format("%s%s(%s)", fold_icon, cut.name, cut.type)
-				end
-
-				tags.re_line({ name, cut.name }, cut.filename, cut.line, "sg_t")
-				if tags.fold_status[tags.current_buff_fullname][cut.name] == true then
-					goto continue
-				end
-
+				tcut = cut
 				break
 			end
 		end
 
+		if show_members == false and exists_members == true then
+			goto continue
+		end
 
-		-- find not in current file's struct's methods
-		local others_method_start_index = -1
 		if not tags.hide_others_method_status then
 			others_method_start_index = #methods + 1
 			for _, cut in ipairs(tags.others_file_method) do
 				if cut.ctype == sname then
-					methods[#methods + 1] = cut
+					if show_members == true then
+						methods[#methods + 1] = cut
+					else
+						exists_members = true
+						break
+					end
 				end
 			end
 		end
 
-		for index, mcut in ipairs(methods) do
-			local hl = "sg_m_1"
-			local icon = symbol.SymbolKind.m[2][1]
-			if index > others_method_start_index - 1 then
-				hl   = "sg_m_2"
-				icon = symbol.SymbolKind.m[2][2]
-
-			end
-			tags.re_line({ string.format("\t %s%s%s %s", icon, mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, hl)
-		end
 		::continue::
+		local icon = symbol.SymbolKind.t[2][2]
+		if tcut.type ~= "struct" then
+			icon = symbol.SymbolKind.t[2][1]
+		end
+
+		if show_members == false and exists_members then -- hide members and exists members
+			icon = config.fold_close_icon
+		elseif show_members == true and #methods > 0 then -- show members and members least 1
+			icon = config.fold_open_icon
+		end
+
+		local name = icon .. tcut.name
+		if tcut.type ~= "struct" then
+			name = string.format("%s%s(%s)", icon, tcut.name, tcut.type)
+		end
+
+		tags.re_line({ name, tcut.name }, tcut.filename, tcut.line, "sg_t")
+
+		if show_members == true then
+			for index, mcut in ipairs(methods) do
+				local hl = "sg_m_1"
+				local icon = symbol.SymbolKind.m[2][1]
+				if index > others_method_start_index - 1 then
+					hl   = "sg_m_2"
+					icon = symbol.SymbolKind.m[2][2]
+				end
+
+				tags.re_line({ string.format("\t %s%s%s %s", icon, mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, hl)
+			end
+		end
 
 	end
-
 end
 
 function tags.jump(line)
