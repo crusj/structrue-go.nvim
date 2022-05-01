@@ -8,7 +8,7 @@ local hl = {
 	cls_timer = nil,
 }
 
-function hl.init()
+function hl.setup()
 	hl.register_namespace()
 end
 

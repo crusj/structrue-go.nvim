@@ -1,2 +1,2 @@
-local namespace ={}
+local namespace = {}
 return namespace

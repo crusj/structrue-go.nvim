@@ -1,11 +1,14 @@
 local symbol = require('symbol')
-local ns = require('namespace')
+local env = require("env")
+local ns = require("namespace")
+
 local tags = {
 	fold_status = {}
 }
+local config = {}
 
-function tags.setup(config)
-	tags.config = config
+function tags.setup()
+	config = require("config").get_data()
 end
 
 -- init tags.
@@ -16,13 +19,13 @@ function tags.init()
 	tags.functions                 = {}
 	tags.types                     = {}
 	tags.interfaces                = {}
-	tags.currentFileIMethods       = {}
+	tags.current_file_i_methods    = {}
 	tags.imports                   = {}
-	tags.currentFileTypes          = {} -- inclue struct and type
-	tags.currentFileSFields        = {}
-	tags.currentFileMethods        = {}
-	tags.othersFileTypes           = {}
-	tags.othersFileMethods         = {}
+	tags.current_file_types        = {} -- inclue struct and type
+	tags.current_file_s_fields     = {}
+	tags.current_file_methods      = {}
+	tags.others_file_type          = {}
+	tags.others_file_method        = {}
 	tags.current_buff_name         = ""
 	tags.current_buff_fullname     = ""
 	tags.lines                     = { names = {}, lines = {}, lines_reverse = {}, fullnames = {}, highlights = {} }
@@ -59,12 +62,12 @@ end
 
 -- generate tags use gotags.
 function tags.generate(path)
-	if not tags.check_bin() then
-		print('gotags is not found.')
+	if not env.install_gotags then
+		print("Miss gotags")
 		return
 	end
 
-	local gofiles = path .. "/*.go"
+	local gofiles = path .. env.path_sep .. "*.go"
 	vim.fn.jobstart("gotags " .. gofiles, {
 		on_stdout = function(id, data, name)
 			for index, line in pairs(data) do
@@ -79,11 +82,6 @@ function tags.generate(path)
 			tags.flushToWindow()
 		end
 	})
-end
-
--- check gotags is exists.
-function tags.check_bin()
-	return os.execute("which gotags") == 0
 end
 
 -- group each tag line.
@@ -102,21 +100,21 @@ function tags:group(cut)
 		elseif cut.kind == "function" then
 			self.functions[#self.functions + 1] = cut
 		elseif cut.kind == "type" then
-			self.currentFileTypes[#self.currentFileTypes + 1] = cut
+			self.current_file_types[#self.current_file_types + 1] = cut
 		elseif cut.kind == "field" then
-			self.currentFileSFields[#self.currentFileSFields + 1] = cut
+			self.current_file_s_fields[#self.current_file_s_fields + 1] = cut
 		elseif cut.kind == "method" then
 			if cut.ntype ~= "" then -- interface method
-				self.currentFileIMethods[#self.currentFileIMethods + 1] = cut
+				self.current_file_i_methods[#self.current_file_i_methods + 1] = cut
 			else
-				self.currentFileMethods[#self.currentFileMethods + 1] = cut
+				self.current_file_methods[#self.current_file_methods + 1] = cut
 			end
 		end
 	else
 		if cut.kind == "type" then
-			self.othersFileTypes[#self.othersFileTypes + 1] = cut
+			self.others_file_type[#self.others_file_type + 1] = cut
 		elseif cut.kind == "method" then
-			self.othersFileMethods[#self.othersFileMethods + 1] = cut
+			self.others_file_method[#self.others_file_method + 1] = cut
 		end
 	end
 end
@@ -128,24 +126,25 @@ function tags.flushToWindow()
 	end
 
 	vim.api.nvim_buf_set_option(tags.bufs, "modifiable", true)
-	-- flush filename
-	tags.flushFileNameToWindow()
-	-- flush package
-	tags.flushPackageToWindow()
-	-- flush import
-	tags.flushImportsToWindow()
-	-- flush const
-	tags.flushConstToWindow()
-	-- flush vars
-	tags.flushVarsToWindow()
-	-- flush functions
-	tags.flushFunctionsToWindow()
-	-- flush interfaces
-	tags.flushInterfacesToWindow()
-	-- flush struct and methods
-	tags.flushCurrentFileTypeAndAllMethodsToWindow()
-	-- flush method and struct
-	tags.flushCurrentFileMethodsAndTypeToWindow()
+
+	-- parse filename
+	tags.parse_file_name()
+	-- parse package
+	tags.parse_package()
+	-- parse import
+	tags.parse_import()
+	-- parse const
+	tags.parse_const()
+	-- parse vars
+	tags.parse_var()
+	-- parse functions
+	tags.parse_func()
+	-- parse interfaces
+	tags.parse_interface()
+	-- parse struct and methods
+	tags.parse_c_t_m()
+	-- parse method and struct
+	tags.parse_c_m_t()
 
 	tags.set_symbols_to_buf()
 	tags.highlight_lines()
@@ -167,25 +166,25 @@ function tags.highlight_lines()
 	end
 end
 
-function tags.flushFileNameToWindow()
-	if tags.config.show_filename == true then
+function tags.parse_file_name()
+	if config.show_filename == true then
 		tags.re_line({ symbol.SymbolKind.F[2] .. "file: " .. tags.current_buff_fullname }, "", -1, "sg_F")
 	end
 end
 
-function tags.flushPackageToWindow()
+function tags.parse_package()
 	tags.re_line({ symbol.SymbolKind.p[2] .. "package: " .. tags.package.name }, tags.package.filename, tags.package.line, "sg_p")
 end
 
-function tags.flushImportsToWindow()
+function tags.parse_import()
 	if tags.fold_status[tags.current_buff_fullname]["import"] == nil then
-		tags.fold_status[tags.current_buff_fullname]["import"] = tags.config.fold.import
+		tags.fold_status[tags.current_buff_fullname]["import"] = config.fold.import
 	end
 
 	if #tags.imports > 0 then
-		local fold_icon = tags.config.fold_open_icon
+		local fold_icon = config.fold_open_icon
 		if tags.fold_status[tags.current_buff_fullname]["import"] == true then
-			fold_icon = tags.config.fold_close_icon
+			fold_icon = config.fold_close_icon
 		end
 
 		tags.re_line({ fold_icon .. "import", "import" }, "", -1, "sg_i")
@@ -200,15 +199,15 @@ function tags.flushImportsToWindow()
 	end
 end
 
-function tags.flushConstToWindow()
+function tags.parse_const()
 	if tags.fold_status[tags.current_buff_fullname]["const"] == nil then
-		tags.fold_status[tags.current_buff_fullname]["const"] = tags.config.fold.const
+		tags.fold_status[tags.current_buff_fullname]["const"] = config.fold.const
 	end
 
 	if #tags.consts > 0 then
-		local fold_icon = tags.config.fold_open_icon
+		local fold_icon = config.fold_open_icon
 		if tags.fold_status[tags.current_buff_fullname]["const"] == true then
-			fold_icon = tags.config.fold_close_icon
+			fold_icon = config.fold_close_icon
 		end
 
 		tags.re_line({ fold_icon .. "const", "const" }, "", -1, "sg_c")
@@ -223,15 +222,15 @@ function tags.flushConstToWindow()
 	end
 end
 
-function tags.flushVarsToWindow()
+function tags.parse_var()
 	if tags.fold_status[tags.current_buff_fullname]["var"] == nil then
-		tags.fold_status[tags.current_buff_fullname]["var"] = tags.config.fold.variable
+		tags.fold_status[tags.current_buff_fullname]["var"] = config.fold.variable
 	end
 
 	if #tags.vars >= 1 then
-		local fold_icon = tags.config.fold_open_icon
+		local fold_icon = config.fold_open_icon
 		if tags.fold_status[tags.current_buff_fullname]["var"] == true then
-			fold_icon = tags.config.fold_close_icon
+			fold_icon = config.fold_close_icon
 		end
 
 		tags.re_line({ fold_icon .. "var", "var" }, "", -1, "sg_v")
@@ -246,15 +245,15 @@ function tags.flushVarsToWindow()
 	end
 end
 
-function tags.flushFunctionsToWindow()
+function tags.parse_func()
 	if tags.fold_status[tags.current_buff_fullname]["func"] == nil then
-		tags.fold_status[tags.current_buff_fullname]["func"] = tags.config.fold.func
+		tags.fold_status[tags.current_buff_fullname]["func"] = config.fold.func
 	end
 
 	if #tags.functions >= 1 then
-		local fold_icon = tags.config.fold_open_icon
+		local fold_icon = config.fold_open_icon
 		if tags.fold_status[tags.current_buff_fullname]["func"] == true then
-			fold_icon = tags.config.fold_close_icon
+			fold_icon = config.fold_close_icon
 		end
 		tags.re_line({ fold_icon .. "func", "func" }, "", -1, "sg_f")
 
@@ -268,24 +267,24 @@ function tags.flushFunctionsToWindow()
 	end
 end
 
-function tags.flushInterfacesToWindow()
+function tags.parse_interface()
 	for _, icut in ipairs(tags.interfaces) do
 		if tags.fold_status[tags.current_buff_fullname][icut.name] == nil then
-			tags.fold_status[tags.current_buff_fullname][icut.name] = tags.config.fold.interface
+			tags.fold_status[tags.current_buff_fullname][icut.name] = config.fold.interface
 		end
 
-		local fold_icon = tags.config.fold_open_icon
+		local fold_icon = config.fold_open_icon
 		if tags.fold_status[tags.current_buff_fullname][icut.name] == true then
-			fold_icon = tags.config.fold_close_icon
+			fold_icon = config.fold_close_icon
 		end
 
-		tags.re_line({ fold_icon .. icut.name, icut.filename, icut.name }, icut.line, "sg_i")
+		tags.re_line({ fold_icon .. icut.name, icut.filename, icut.name }, icut.filename, icut.line, "sg_i")
 
 		if tags.fold_status[tags.current_buff_fullname][icut.name] == true then
 			return
 		end
 
-		for _, cut in ipairs(tags.currentFileIMethods) do
+		for _, cut in ipairs(tags.current_file_i_methods) do
 			if cut.ntype == icut.name then
 				tags.re_line({ string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][1], cut.name, cut.signature, cut.type) }, cut.filename, cut.line, "sg_m_1")
 			end
@@ -293,15 +292,16 @@ function tags.flushInterfacesToWindow()
 	end
 end
 
-function tags.flushCurrentFileTypeAndAllMethodsToWindow()
-	for _, tcut in ipairs(tags.currentFileTypes) do
+-- current file type and methods
+function tags.parse_c_t_m()
+	for _, tcut in ipairs(tags.current_file_types) do
 		if tags.fold_status[tags.current_buff_fullname][tcut.name] == nil then
-			tags.fold_status[tags.current_buff_fullname][tcut.name] = tags.config.fold.type
+			tags.fold_status[tags.current_buff_fullname][tcut.name] = config.fold.type
 		end
 
-		local fold_icon = tags.config.fold_open_icon
+		local fold_icon = config.fold_open_icon
 		if tags.fold_status[tags.current_buff_fullname][tcut.name] == true then
-			fold_icon = tags.config.fold_close_icon
+			fold_icon = config.fold_close_icon
 		end
 
 		local name = fold_icon .. tcut.name
@@ -314,13 +314,14 @@ function tags.flushCurrentFileTypeAndAllMethodsToWindow()
 			goto continue
 		end
 
-		for _, fcut in ipairs(tags.currentFileSFields) do
+		for _, fcut in ipairs(tags.current_file_s_fields) do
 			if fcut.ctype == tcut.name then
 				tags.re_line({ string.format("\t %s%s %s", symbol.SymbolKind.w[2], fcut.name, fcut.type) }, fcut.filename, fcut.line, "sg_w")
 			end
 		end
+
 		-- current file methods
-		for _, mcut in ipairs(tags.currentFileMethods) do
+		for _, mcut in ipairs(tags.current_file_methods) do
 			if mcut.ctype == tcut.name then
 				tags.re_line({ string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][1], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_1")
 			end
@@ -330,7 +331,7 @@ function tags.flushCurrentFileTypeAndAllMethodsToWindow()
 			goto continue
 		end
 
-		for _, mcut in ipairs(tags.othersFileMethods) do
+		for _, mcut in ipairs(tags.others_file_method) do
 			if mcut.ctype == tcut.name then
 				tags.re_line({ string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][2], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_2")
 			end
@@ -339,12 +340,13 @@ function tags.flushCurrentFileTypeAndAllMethodsToWindow()
 	end
 end
 
-function tags.flushCurrentFileMethodsAndTypeToWindow()
+-- parse current methods type
+function tags.parse_c_m_t()
 	-- struct methods
 	local sm = {}
-	for _, mcut in ipairs(tags.currentFileMethods) do
+	for _, mcut in ipairs(tags.current_file_methods) do
 		local find = false
-		for _, scut in ipairs(tags.currentFileTypes) do
+		for _, scut in ipairs(tags.current_file_types) do
 			if scut.name == mcut.ctype then
 				find = true
 				break
@@ -363,15 +365,15 @@ function tags.flushCurrentFileMethodsAndTypeToWindow()
 
 	for sname, methods in pairs(sm) do
 		-- search struct
-		for _, cut in ipairs(tags.othersFileTypes) do
+		for _, cut in ipairs(tags.others_file_type) do
 			if tags.fold_status[tags.current_buff_fullname][cut.name] == nil then
-				tags.fold_status[tags.current_buff_fullname][cut.name] = tags.config.fold.type
+				tags.fold_status[tags.current_buff_fullname][cut.name] = config.fold.type
 			end
 
 			if cut.name == sname then
-				local fold_icon = tags.config.fold_open_icon
+				local fold_icon = config.fold_open_icon
 				if tags.fold_status[tags.current_buff_fullname][cut.name] == true then
-					fold_icon = tags.config.fold_close_icon
+					fold_icon = config.fold_close_icon
 				end
 
 				local name = fold_icon .. cut.name
@@ -393,7 +395,7 @@ function tags.flushCurrentFileMethodsAndTypeToWindow()
 		local others_method_start_index = -1
 		if not tags.hide_others_method_status then
 			others_method_start_index = #methods + 1
-			for _, cut in ipairs(tags.othersFileMethods) do
+			for _, cut in ipairs(tags.others_file_method) do
 				if cut.ctype == sname then
 					methods[#methods + 1] = cut
 				end
@@ -484,7 +486,7 @@ function tags.fold_toggle()
 	end
 
 	tags.fold_status[tags.current_buff_fullname][cursor_symbol] = not tags.fold_status[tags.current_buff_fullname][cursor_symbol]
-	tags.lines                                           = { names = {}, lines = {}, lines_reverse = {}, fullnames = {}, highlights = {} }
+	tags.lines                                                  = { names = {}, lines = {}, lines_reverse = {}, fullnames = {}, highlights = {} }
 	tags.flushToWindow()
 	vim.cmd("execute  \"normal! " .. line .. "G;zz\"")
 

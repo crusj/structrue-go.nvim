@@ -2,7 +2,10 @@
 local S = {}
 require("split")
 
-function S.setup(config)
+local config = {}
+
+function S.setup()
+    config = require("config").get_data()
 	S.SymbolKind = {
 		F = { "filename", config.symbol.filename.icon, config.symbol.filename.hl },
 		p = { "package", config.symbol.package.icon, config.symbol.package.hl },
