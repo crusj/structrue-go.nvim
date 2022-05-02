@@ -83,10 +83,11 @@ function config.setup(user_config)
 		return
 	end
 
-	for dk, dv in pairs(config) do
+	for dk, dv in pairs(config.data) do
 		if type(dv) ~= "table" then
 			if user_config[dk] ~= nil then
 				config.data[dk] = user_config[dk]
+				print(config.data[dk])
 			end
 			goto continue
 		end
