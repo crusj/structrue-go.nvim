@@ -87,7 +87,6 @@ function config.setup(user_config)
 		if type(dv) ~= "table" then
 			if user_config[dk] ~= nil then
 				config.data[dk] = user_config[dk]
-				print(config.data[dk])
 			end
 			goto continue
 		end
