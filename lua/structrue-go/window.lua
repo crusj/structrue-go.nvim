@@ -31,7 +31,7 @@ function w.create_structrue_window()
 
 	vim.api.nvim_win_set_option(w.bufsw, 'winfixwidth', true)
 	vim.api.nvim_win_set_option(w.bufsw, 'wrap', false)
-	vim.api.nvim_win_set_option(w.bufsw, 'cursorline', false)
+	vim.api.nvim_win_set_option(w.bufsw, 'cursorline', true)
 	vim.api.nvim_win_set_width(w.bufsw, w.bufsw_width)
 
 	if w.bufs == nil then -- structrue buf
