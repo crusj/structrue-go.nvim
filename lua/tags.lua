@@ -329,7 +329,7 @@ function tags.parse_c_t_m()
 		for _, fcut in ipairs(tags.current_file_s_fields) do
 			if fcut.ctype == tcut.name then
 				if show_members == true then
-					table.insert(members, { { string.format("\t %s%s %s", symbol.SymbolKind.w[2], fcut.name, fcut.type) }, fcut.filename, fcut.line, "sg_w" })
+					table.insert(members, { { string.format("\t%s%s %s", symbol.SymbolKind.w[2], fcut.name, fcut.type) }, fcut.filename, fcut.line, "sg_w" })
 				else
 					exists_members = true
 					break
@@ -345,7 +345,7 @@ function tags.parse_c_t_m()
 		for _, mcut in ipairs(tags.current_file_methods) do
 			if mcut.ctype == tcut.name then
 				if show_members == true then
-					table.insert(members, { { string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][1], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_1" })
+					table.insert(members, { { string.format("\t%s%s%s %s", symbol.SymbolKind.m[2][1], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_1" })
 				else
 					exists_members = true
 					break
@@ -364,7 +364,7 @@ function tags.parse_c_t_m()
 		for _, mcut in ipairs(tags.others_file_method) do
 			if mcut.ctype == tcut.name then
 				if show_members == true then
-					table.insert(members, { { string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][2], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_2" })
+					table.insert(members, { { string.format("\t%s%s%s %s", symbol.SymbolKind.m[2][2], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_2" })
 				else
 					exists_members = true
 					break
@@ -489,7 +489,7 @@ function tags.parse_c_m_t()
 					icon = symbol.SymbolKind.m[2][2]
 				end
 
-				tags.re_line({ string.format("\t %s%s%s %s", icon, mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, hl)
+				tags.re_line({ string.format("\t%s%s%s %s", icon, mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, hl)
 			end
 		end
 
