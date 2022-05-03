@@ -1,11 +1,11 @@
 -- symbol parser
 local S = {}
-require("split")
+require("structrue-go.split")
 
 local config = {}
 
 function S.setup()
-    config = require("config").get_data()
+    config = require("structrue-go.config").get_data()
 	S.SymbolKind = {
 		F = { "filename", config.symbol.filename.icon, config.symbol.filename.hl },
 		p = { "package", config.symbol.package.icon, config.symbol.package.hl },

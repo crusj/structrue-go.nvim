@@ -1,7 +1,7 @@
-local tags = require('tags')
-local symbol = require("symbol")
-local ns = require("namespace")
-local w = require("window")
+local tags = require('structrue-go.tags')
+local symbol = require("structrue-go.symbol")
+local ns = require("structrue-go.namespace")
+local w = require("structrue-go.window")
 
 local hl = {
 	last_cls_line = -1,

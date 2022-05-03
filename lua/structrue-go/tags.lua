@@ -1,7 +1,7 @@
-local symbol = require('symbol')
-local env = require("env")
-local ns = require("namespace")
-local w = require("window")
+local symbol = require('structrue-go.symbol')
+local env = require("structrue-go.env")
+local ns = require("structrue-go.namespace")
+local w = require("structrue-go.window")
 
 local tags = {
 	fold_status = {}
@@ -9,7 +9,7 @@ local tags = {
 local config = {}
 
 function tags.setup()
-	config = require("config").get_data()
+	config = require("structrue-go.config").get_data()
 end
 
 -- init tags.

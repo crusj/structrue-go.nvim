@@ -1,10 +1,10 @@
-local hl = require("highlight")
-local c = require("config")
-local tags = require("tags")
-local ev = require("event")
-local symbol = require("symbol")
-local env = require("env")
-local w = require("window")
+local hl = require("structrue-go.highlight")
+local c = require("structrue-go.config")
+local tags = require("structrue-go.tags")
+local ev = require("structrue-go.event")
+local symbol = require("structrue-go.symbol")
+local env = require("structrue-go.env")
+local w = require("structrue-go.window")
 
 local sg = {}
 

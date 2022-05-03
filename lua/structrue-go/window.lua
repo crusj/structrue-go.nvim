@@ -12,7 +12,7 @@ local w = {
 
 local config = nil
 function w.setup()
-	config = require("config").get_data()
+	config = require("structrue-go.config").get_data()
 end
 
 function w.create_structrue_window()

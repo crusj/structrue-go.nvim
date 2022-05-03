@@ -1,5 +1,5 @@
-local tags = require("tags")
-local hl = require("highlight")
+local tags = require("structrue-go.tags")
+local hl = require("structrue-go.highlight")
 
 
 local config = {}
@@ -8,7 +8,7 @@ local event = {
 }
 
 function event.setup()
-    config = require("config").get_data()
+    config = require("structrue-go.config").get_data()
 	vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
 		pattern = { "*.go" },
 		callback = event.enter

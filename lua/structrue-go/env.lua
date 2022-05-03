@@ -1,4 +1,4 @@
-require("split")
+require("structrue-go.split")
 local e = {
 	is_windows = false,
 	path_sep = "/",

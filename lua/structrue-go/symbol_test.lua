@@ -1,5 +1,5 @@
-require('split')
-local s = require('symbol')
+require('structrue-go.split')
+local s = require('structrue-go.symbol')
 
 local tags = [[
 AddBufferHighlight	api.go	2643;"	m	access:public	ctype:Nvim	line:2643	signature:(buffer Buffer, srcID int, hlGroup string, line int, startCol int, endCol int)	type:int, error
