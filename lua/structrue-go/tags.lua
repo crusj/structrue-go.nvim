@@ -4,12 +4,16 @@ local ns = require("structrue-go.namespace")
 local w = require("structrue-go.window")
 
 local tags = {
-	fold_status = {}
+	fold_status = {},
+	indent = "\t"
 }
 local config = {}
 
 function tags.setup()
 	config = require("structrue-go.config").get_data()
+	if config.indent ~= nil and config.indent ~= "" then
+		tags.indent = config.indent .. " "
+	end
 end
 
 -- init tags.
@@ -158,7 +162,7 @@ end
 
 function tags.highlight_lines()
 	for index, hl in ipairs(tags.lines.highlights) do
-		vim.api.nvim_buf_add_highlight(w.bufs, ns[hl], hl, index - 1, 0, -1)
+		vim.api.nvim_buf_add_highlight(w.bufs, ns[hl], hl, index - 1, 3, -1)
 	end
 end
 
@@ -190,7 +194,7 @@ function tags.parse_import()
 		end
 
 		for _, cut in ipairs(tags.imports) do
-			tags.re_line({ "\t" .. symbol.SymbolKind.i[2] .. cut.name }, cut.filename, cut.line, "sg_i")
+			tags.re_line({ tags.indent .. symbol.SymbolKind.i[2] .. cut.name }, cut.filename, cut.line, "sg_i")
 		end
 	end
 end
@@ -213,7 +217,7 @@ function tags.parse_const()
 		end
 
 		for _, cut in ipairs(tags.consts) do
-			tags.re_line({ "\t" .. symbol.SymbolKind.c[2] .. cut.name }, cut.filename, cut.line, "sg_c")
+			tags.re_line({ tags.indent .. symbol.SymbolKind.c[2] .. cut.name }, cut.filename, cut.line, "sg_c")
 		end
 	end
 end
@@ -236,7 +240,7 @@ function tags.parse_var()
 		end
 
 		for _, cut in ipairs(tags.vars) do
-			tags.re_line({ "\t" .. symbol.SymbolKind.v[2] .. cut.name }, cut.filename, cut.line, "sg_v")
+			tags.re_line({ tags.indent .. symbol.SymbolKind.v[2] .. cut.name }, cut.filename, cut.line, "sg_v")
 		end
 	end
 end
@@ -258,7 +262,7 @@ function tags.parse_func()
 		end
 
 		for _, cut in ipairs(tags.functions) do
-			tags.re_line({ "\t" .. symbol.SymbolKind.f[2] .. cut.name .. cut.signature .. cut.type }, cut.filename, cut.line, "sg_f")
+			tags.re_line({ tags.indent .. symbol.SymbolKind.f[2] .. cut.name .. cut.signature .. cut.type }, cut.filename, cut.line, "sg_f")
 		end
 	end
 end
@@ -284,7 +288,7 @@ function tags.parse_interface()
 					break
 				else
 					table.insert(i_methods, {
-						{ string.format("\t %s%s%s %s", symbol.SymbolKind.m[2][1], cut.name, cut.signature, cut.type) },
+						{ string.format("%s%s%s%s %s", tags.indent, symbol.SymbolKind.m[2][1], cut.name, cut.signature, cut.type) },
 						cut.filename,
 						cut.line,
 						"sg_m_1"
@@ -329,7 +333,7 @@ function tags.parse_c_t_m()
 		for _, fcut in ipairs(tags.current_file_s_fields) do
 			if fcut.ctype == tcut.name then
 				if show_members == true then
-					table.insert(members, { { string.format("\t%s%s %s", symbol.SymbolKind.w[2], fcut.name, fcut.type) }, fcut.filename, fcut.line, "sg_w" })
+					table.insert(members, { { string.format("%s%s%s %s", tags.indent, symbol.SymbolKind.w[2], fcut.name, fcut.type) }, fcut.filename, fcut.line, "sg_w" })
 				else
 					exists_members = true
 					break
@@ -345,7 +349,7 @@ function tags.parse_c_t_m()
 		for _, mcut in ipairs(tags.current_file_methods) do
 			if mcut.ctype == tcut.name then
 				if show_members == true then
-					table.insert(members, { { string.format("\t%s%s%s %s", symbol.SymbolKind.m[2][1], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_1" })
+					table.insert(members, { { string.format("%s%s%s%s %s", tags.indent, symbol.SymbolKind.m[2][1], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_1" })
 				else
 					exists_members = true
 					break
@@ -364,7 +368,7 @@ function tags.parse_c_t_m()
 		for _, mcut in ipairs(tags.others_file_method) do
 			if mcut.ctype == tcut.name then
 				if show_members == true then
-					table.insert(members, { { string.format("\t%s%s%s %s", symbol.SymbolKind.m[2][2], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_2" })
+					table.insert(members, { { string.format("%s%s%s%s %s", tags.indent, symbol.SymbolKind.m[2][2], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_2" })
 				else
 					exists_members = true
 					break
@@ -489,7 +493,7 @@ function tags.parse_c_m_t()
 					icon = symbol.SymbolKind.m[2][2]
 				end
 
-				tags.re_line({ string.format("\t%s%s%s %s", icon, mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, hl)
+				tags.re_line({ string.format("%s%s%s%s %s", tags.indent, icon, mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, hl)
 			end
 		end
 

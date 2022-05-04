@@ -12,23 +12,25 @@ I use some plugins that reflect the file struct, they support many languages, bu
 
 **Categorize symbols and show hierarchical relationships**
 
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature1.png" width="350">
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature1-min.png" width="350">
 
 **Jump from symbols and highlight the corresponding symbol under the cursor line**
 
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature2.png" width="350">
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature2-min.png" width="350">
 
 **Toggle methods of struct whose not in current file and hl them**
 
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature3.png" width="350">
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature3-1-min.png" width="200">
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature3-2-min.png" width="200">
 
 **Able to fold imports、const、var、func、type、interface and always remember folding state even when switching files**
 
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature4.png" width="350">
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature4-1-min.png" width="200">
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature4-2-min.png" width="200">
 
 **Preview**
 
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature5.png" width="850">
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature5-min.png" width="850">
 
 **Configurable highlights, icons, shortcuts**
 
@@ -57,6 +59,7 @@ use {
 ```
 
 **Or**
+
 ```shell
 git clone https://github.com/crusj/structrue-go.nvim.git  ~/.local/share/nvim/site/pack/plugins/start/structrue-go.nvim
 ```
@@ -79,6 +82,7 @@ local default_config = {
 	fold_open_icon = " ",
 	fold_close_icon = " ",
 	cursor_symbol_hl = "guibg=Gray guifg=White", -- symbol hl under cursor,
+	indent = "┠",  -- Hierarchical indent icon, nil or empty will be a tab
 	symbol = { -- symbol style
 		filename = {
 			hl = "guifg=Black", -- highlight symbol

@@ -107,7 +107,7 @@ function hl.start_hl_cls()
 			end
 
 			if hl_bufs_line ~= -1 then
-				vim.api.nvim_buf_add_highlight(tonumber(w.bufs), ns["sg_cls"], "sg_cls", hl_bufs_line - 1, 0, -1)
+				vim.api.nvim_buf_add_highlight(tonumber(w.bufs), ns["sg_cls"], "sg_cls", hl_bufs_line - 1, 3, -1)
 				-- rember last line
 				hl.last_cls_line = hl_bufs_line
 			end
