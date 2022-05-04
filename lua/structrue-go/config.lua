@@ -10,6 +10,7 @@ function config.setup(user_config)
 		fold_close_icon = " ",
 		cursor_symbol_hl = "guibg=Gray guifg=White", -- symbol hl under cursor,
 		indent = "┠",  -- Hierarchical indent icon, nil or empty will be a tab
+		position = "botright", -- window position,default botright,also can set float
 		symbol = { -- symbol style
 			filename = {
 				hl = "guifg=Black", -- highlight symbol

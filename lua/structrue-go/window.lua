@@ -16,10 +16,36 @@ function w.setup()
 end
 
 function w.create_structrue_window()
-	w.bufsw_width = math.floor(vim.api.nvim_win_get_width(w.bufw) / 4)
-	vim.cmd('botright vs')
-	w.bufsw = vim.api.nvim_get_current_win()
+	if w.bufs == nil then -- structrue buf
+		w.bufs = vim.api.nvim_create_buf(false, true)
+		vim.api.nvim_buf_set_name(w.bufs, 'structrue')
+		vim.api.nvim_buf_set_option(w.bufs, 'filetype', 'structrue-go')
+		w.buf_key_binds()
+	end
 
+	if config.position == "float" then
+		local buffw = vim.api.nvim_win_get_width(w.bufw)
+		local buffh = vim.api.nvim_win_get_height(w.bufw)
+		local fw = math.floor(buffw * 0.4)
+		local fh = math.floor(buffh * 0.9)
+
+		w.bufsw = vim.api.nvim_open_win(w.bufs, true, {
+			relative = "win",
+			width = fw,
+			height = fh,
+			row = math.floor((buffh - fh) / 2),
+			col = math.floor((buffw - fw) / 2),
+			border = "double",
+			zindex = 100,
+		})
+		w.bufsw_width = fw
+
+	else
+		w.bufsw_width = math.floor(vim.api.nvim_win_get_width(w.bufw) / 4)
+		vim.cmd(config.position .. ' vs')
+	end
+
+	w.bufsw = vim.api.nvim_get_current_win()
 	if config.number == "nu" then
 		vim.api.nvim_win_set_option(w.bufsw, 'number', true)
 	elseif config.number == "rnu" then
@@ -33,14 +59,6 @@ function w.create_structrue_window()
 	vim.api.nvim_win_set_option(w.bufsw, 'wrap', false)
 	vim.api.nvim_win_set_option(w.bufsw, 'cursorline', true)
 	vim.api.nvim_win_set_width(w.bufsw, w.bufsw_width)
-
-	if w.bufs == nil then -- structrue buf
-		w.bufs = vim.api.nvim_create_buf(false, true)
-		vim.api.nvim_buf_set_name(w.bufs, 'structrue')
-		vim.api.nvim_buf_set_option(w.bufs, 'filetype', 'structrue-go')
-		w.buf_key_binds()
-	end
-
 	w.bufw_height = vim.api.nvim_win_get_height(w.bufw)
 
 	vim.api.nvim_win_set_buf(w.bufsw, w.bufs) -- bind buf and window
@@ -48,7 +66,7 @@ end
 
 function w.preview_open(buf_line)
 	if w.previeww ~= nil and vim.api.nvim_win_is_valid(w.previeww) then
-		vim.api.nvim_win_close(w.previeww,true)
+		vim.api.nvim_win_close(w.previeww, true)
 	end
 
 	local width = w.bufsw_width
@@ -60,6 +78,7 @@ function w.preview_open(buf_line)
 		width = width * 2,
 		height = math.floor(w.bufw_height / 2),
 		border = "double",
+		zindex = 101,
 	})
 
 	vim.cmd("execute  \"normal! " .. buf_line .. "G;zz\"")
@@ -70,8 +89,8 @@ function w.preview_open(buf_line)
 end
 
 function w.preview_close()
-	if vim.api.nvim_win_is_valid(w.previeww) then
-		vim.api.nvim_win_close(w.previeww,true)
+	if w.previeww ~= nil and vim.api.nvim_win_is_valid(w.previeww) then
+		vim.api.nvim_win_close(w.previeww, true)
 	end
 
 	w.previeww = nil

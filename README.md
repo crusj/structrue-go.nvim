@@ -30,6 +30,12 @@ I use some plugins that reflect the file struct, they support many languages, bu
 
 <img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature5-min.png" width="850">
 
+**Float support**
+
+```config.position = "float"```
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature6-min.png" width="850">
+
+
 **Configurable highlights, icons, shortcuts**
 
 
