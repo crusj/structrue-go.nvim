@@ -9,7 +9,7 @@ function config.setup(user_config)
 		fold_open_icon = " ",
 		fold_close_icon = " ",
 		cursor_symbol_hl = "guibg=Gray guifg=White", -- symbol hl under cursor,
-		indent = "┠",  -- Hierarchical indent icon, nil or empty will be a tab
+		indent = "┠", -- Hierarchical indent icon, nil or empty will be a tab
 		position = "botright", -- window position,default botright,also can set float
 		symbol = { -- symbol style
 			filename = {
@@ -96,7 +96,7 @@ function config.setup(user_config)
 		if (dk == "fold" or dk == "keymap") and user_config[dk] ~= nil then
 			for fk, fv in pairs(dv) do
 				if user_config[dk][fk] ~= nil then
-					config.data[dk][fk] = fv
+					config.data[dk][fk] = user_config[dk][fk]
 				end
 			end
 		end
@@ -107,7 +107,7 @@ function config.setup(user_config)
 				if user_config[dk][sk] ~= nil then
 					for k, v in pairs(sv) do
 						if user_config[dk][sk][k] ~= nil then
-							config.data[dk][sk][k] = v
+							config.data[dk][sk][k] =user_config[dk][sk][k]
 						end
 					end
 				end
