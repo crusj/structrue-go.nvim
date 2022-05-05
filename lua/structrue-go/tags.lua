@@ -168,7 +168,7 @@ end
 
 function tags.parse_file_name()
 	if config.show_filename == true then
-		tags.re_line({ symbol.SymbolKind.F[2] .. "file: " .. tags.current_buff_fullname }, "", -1, "sg_F")
+		tags.re_line({ symbol.SymbolKind.fi[2] .. "file: " .. tags.current_buff_fullname }, "", -1, "sg_fi")
 	end
 end
 

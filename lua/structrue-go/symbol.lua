@@ -7,7 +7,7 @@ local config = {}
 function S.setup()
     config = require("structrue-go.config").get_data()
 	S.SymbolKind = {
-		F = { "filename", config.symbol.filename.icon, config.symbol.filename.hl },
+		fi = { "filename", config.symbol.filename.icon, config.symbol.filename.hl },
 		p = { "package", config.symbol.package.icon, config.symbol.package.hl },
 		n = { "interface", config.symbol.interface.icon, config.symbol.interface.hl },
 		i = { "import", config.symbol.import.icon, config.symbol.import.hl },

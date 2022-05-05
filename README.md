@@ -90,7 +90,7 @@ local default_config = {
 	position = "botright", -- window position,default botright,also can set float
 	symbol = { -- symbol style
 		filename = {
-			hl = "guifg=Black", -- highlight symbol
+			hl = "guifg=Black", -- highlight symbol,value can set by help highlight-gui
 			icon = " " -- symbol icon
 		},
 		package = {
