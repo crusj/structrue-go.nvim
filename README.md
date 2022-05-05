@@ -43,7 +43,7 @@ I use some plugins that reflect the file struct, they support many languages, bu
 
 ### Requirement
 
-**nvim0.7**
+**neovim0.7**
 
 **gotags**
 
@@ -73,13 +73,13 @@ git clone https://github.com/crusj/structrue-go.nvim.git  ~/.local/share/nvim/si
 ### Start
 
 ```lua
-require"structrue-go".setup({})
+require"structrue-go".setup()
 ```
 
 ### Default config
 
 ```lua
-local default_config = {
+require"structrue-go".setup({
 	show_others_method = true, -- bool show methods of struct whose not in current file
 	show_filename = true, -- bool
 	number = "no", -- show number: no | nu | rnu
@@ -155,7 +155,7 @@ local default_config = {
 		interface = false,
 		func = false,
 	},
-}
+})
 
 ```
 
