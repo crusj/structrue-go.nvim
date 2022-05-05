@@ -161,14 +161,13 @@ local default_config = {
 
 ### Description
 
-| Operation                | Default Keymap                                                 | Description                                                   | 
-| -------------------------|---------------------------------------------------------------|--------------------------------------------------------------| 
-| toggle symbols           | ```<leader>m```   ```:lua require'structrue-go'.toggle()```               | toggle structure-go                                           |
-| show_others_method_toggle| ```H```        ```:lua require'structrue-go'.hide_others_methods_toggle()```  | show or hidden the methods of struct whose not in current file|
-| symbol_jump              | ```CR```   ```:lua require'structrue-go'.jump()```  | jump to the symbol file under cursor                          |
-| refresh             | ```R```   ```:lua require'structrue-go'.refresh()```  | refresh symbols                          |
-| fold_toggle              | ```<leader>z```     ```:lua require'structrue-go'.fold_toggle()```         | toggle fold                                                   |
-| preview_open              | ```P```     ```:lua require'structrue-go'.preview_open```         | preview symbol context                                                   |
-| preview_close              | ```\p```     ```:lua require'structrue-go'.preview_close```         | close preview symbol context                                                   |
-
+| Keymap                   | Action                                                                 | Description                                                   | 
+| -------------------------|------------------------------------------------------------------------|---------------------------------------------------------------| 
+| ```<leader>m```          |  ```:lua require'structrue-go'.toggle()```                             | Toggle structure-go                                           |
+| ```H```                  |  ```:lua require'structrue-go'.hide_others_methods_toggle()```         | Show or hidden the methods of struct whose not in current file|
+| ```<CR>```               |  ```:lua require'structrue-go'.jump()```                               | Jump to the symbol file under cursor                          |
+| ```R```                  |  ```:lua require'structrue-go'.refresh()```                            | Refresh symbols                                               |
+| ```<leader>z```          |  ```:lua require'structrue-go'.fold_toggle()```                        | Toggle fold                                                   |
+| ```P```                  |  ```:lua require'structrue-go'.preview_open()```                       | Preview symbol context                                        |
+| ```\p```                 |  ```:lua require'structrue-go'.preview_close()```                      | Close preview symbol context                                  |
 
