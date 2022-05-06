@@ -20,6 +20,10 @@ end
 
 -- open
 function sg.open()
+	if w.bufsw ~= nil then
+		return
+	end
+
 	local buff = vim.api.nvim_get_current_buf()
 	if vim.api.nvim_buf_get_option(buff, "filetype") ~= "go" then
 		return
@@ -36,7 +40,10 @@ end
 
 -- close
 function sg.close()
-	vim.api.nvim_win_close(w.bufsw, true)
+	if w.bufsw ~= nil and vim.api.nvim_win_is_valid(w.bufsw) then
+		vim.api.nvim_win_close(w.bufsw, true)
+	end
+
 	w.bufsw = nil
 end
 
@@ -44,14 +51,10 @@ end
 function sg.toggle()
 	if w.bufsw == nil then
 		sg.open()
-		return
+	else
+		sg.close()
 	end
 
-	if vim.api.nvim_win_is_valid(w.bufsw) then
-		sg.close()
-	else
-		sg.open()
-	end
 end
 
 function sg.refresh()

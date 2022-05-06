@@ -164,6 +164,8 @@ require"structrue-go".setup({
 | Keymap                   | Action                                                                 | Description                                                   | 
 | -------------------------|------------------------------------------------------------------------|---------------------------------------------------------------| 
 | ```<leader>m```          |  ```:lua require'structrue-go'.toggle()```                             | Toggle structure-go                                           |
+|                          |  ```:lua require'structrue-go'.close()```                              | Close structrue-go                                            |
+|                          |  ```:lua require'structrue-go'.open()```                               | Open structrue-go                                             |
 | ```H```                  |  ```:lua require'structrue-go'.hide_others_methods_toggle()```         | Show or hidden the methods of struct whose not in current file|
 | ```<CR>```               |  ```:lua require'structrue-go'.jump()```                               | Jump to the symbol file under cursor                          |
 | ```R```                  |  ```:lua require'structrue-go'.refresh()```                            | Refresh symbols                                               |

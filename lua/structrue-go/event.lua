@@ -1,5 +1,6 @@
 local tags = require("structrue-go.tags")
 local hl = require("structrue-go.highlight")
+local w = require("structrue-go.window")
 
 
 local config = {}
@@ -16,6 +17,7 @@ function event.setup()
 	vim.api.nvim_create_autocmd({ "BufWinLeave" }, {
 		callback = function(data)
 			if vim.api.nvim_buf_get_option(data.buf, "filetype") == "structrue-go" then
+				w.bufsw = nil
 				hl.sg_close_handle()
 			end
 		end
