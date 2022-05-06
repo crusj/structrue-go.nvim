@@ -69,14 +69,18 @@ function w.preview_open(buf_line)
 		vim.api.nvim_win_close(w.previeww, true)
 	end
 
-	local width = w.bufsw_width
-	w.previeww = vim.api.nvim_open_win(w.buff, true, {
-		relative = 'win',
-		row = 3,
-		col = -1 * width * 2 - 5,
+	local ew = vim.api.nvim_get_option("columns")
+	local eh = vim.api.nvim_get_option("lines")
 
-		width = width * 2,
-		height = math.floor(w.bufw_height / 2),
+	local width = math.floor(ew * 0.6)
+	local height = math.floor(eh / 2)
+
+	w.previeww = vim.api.nvim_open_win(w.buff, true, {
+		relative = 'editor',
+		row = math.floor((eh - height) / 2),
+		col = math.floor((ew - width) / 2),
+		width = width,
+		height = height,
 		border = "double",
 		zindex = 101,
 	})
@@ -102,6 +106,8 @@ function w.buf_key_binds()
 	vim.api.nvim_buf_set_keymap(w.bufs, "n", config.keymap.fold_toggle, ":lua require'structrue-go'.fold_toggle()<cr>", { silent = true })
 	vim.api.nvim_buf_set_keymap(w.bufs, "n", config.keymap.refresh, ":lua require'structrue-go'.refresh()<cr>", { silent = true })
 	vim.api.nvim_buf_set_keymap(w.bufs, "n", config.keymap.preview_open, ":lua require'structrue-go'.preview_open()<cr>", { silent = true })
+	-- esc
+	vim.api.nvim_buf_set_keymap(w.bufs, "n", "<Esc>", ":lua require'structrue-go'.preview_close()<cr>", { silent = true })
 end
 
 return w
