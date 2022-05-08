@@ -9,14 +9,14 @@ local event = {
 }
 
 function event.setup()
-    config = require("structrue-go.config").get_data()
+	config = require("structrue-go.config").get_data()
 	vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
 		pattern = { "*.go" },
 		callback = event.enter
 	})
 	vim.api.nvim_create_autocmd({ "BufWinLeave" }, {
 		callback = function(data)
-			if vim.api.nvim_buf_get_option(data.buf, "filetype") == "structrue-go" then
+			if vim.api.nvim_buf_get_option(vim.api.nvim_get_current_buf(), "filetype") == "structrue-go" then
 				w.bufsw = nil
 				hl.sg_close_handle()
 			end
