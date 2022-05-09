@@ -38,14 +38,6 @@ function tags.init()
 	tags.open_status               = true -- sg is open?
 end
 
--- run tags parse and write to bufs
-function tags.run()
-	tags.init()
-	local file_path = tags.get_current_buff_path()
-	tags.generate(file_path)
-	tags.current_buff_name = string.sub(tags.current_buff_fullname, #file_path + 2)
-end
-
 function tags.get_current_buff_path()
 	tags.current_buff_fullname = vim.api.nvim_buf_get_name(tonumber(w.buff))
 	return (string.gsub(tags.current_buff_fullname, "/[^/]+$", ""))
@@ -58,30 +50,6 @@ function tags.re_line(name, fullname, line, highlight)
 	tags.lines.lines_reverse[line] = #tags.lines.lines
 	tags.lines.highlights[#tags.lines.highlights + 1] = highlight
 
-end
-
--- generate tags use gotags.
-function tags.generate(path)
-	if not env.install_gotags then
-		print("Miss gotags")
-		return
-	end
-
-	local gofiles = path .. env.path_sep .. "*.go"
-	vim.fn.jobstart("gotags " .. gofiles, {
-		on_stdout = function(id, data, name)
-			for index, line in pairs(data) do
-				if line == "" or string.sub(line, 1, 1) == "!" then
-					goto continue
-				end
-				tags:group(symbol.New(line))
-				::continue::
-			end
-		end,
-		on_exit = function()
-			tags.flushToWindow()
-		end
-	})
 end
 
 -- group each tag line.
@@ -120,7 +88,9 @@ function tags:group(cut)
 end
 
 -- write symbols to window.
-function tags.flushToWindow()
+function tags.flush_to_bufs()
+	w.create_buf()
+
 	if tags.fold_status[tags.current_buff_fullname] == nil then
 		tags.fold_status[tags.current_buff_fullname] = {}
 	end
@@ -148,6 +118,7 @@ function tags.flushToWindow()
 
 	tags.set_symbols_to_buf()
 	tags.highlight_lines()
+
 	vim.api.nvim_buf_set_option(w.bufs, "modifiable", false)
 end
 
@@ -194,7 +165,7 @@ function tags.parse_import()
 		end
 
 		for _, cut in ipairs(tags.imports) do
-			tags.re_line({ tags.indent .. symbol.SymbolKind.i[2] .. cut.name }, cut.filename, cut.line, "sg_i")
+			tags.re_line({ tags.indent .. symbol.SymbolKind.i[2] .. cut.name, cut.name }, cut.filename, cut.line, "sg_i")
 		end
 	end
 end
@@ -217,7 +188,7 @@ function tags.parse_const()
 		end
 
 		for _, cut in ipairs(tags.consts) do
-			tags.re_line({ tags.indent .. symbol.SymbolKind.c[2] .. cut.name }, cut.filename, cut.line, "sg_c")
+			tags.re_line({ tags.indent .. symbol.SymbolKind.c[2] .. cut.name, cut.name }, cut.filename, cut.line, "sg_c")
 		end
 	end
 end
@@ -240,7 +211,7 @@ function tags.parse_var()
 		end
 
 		for _, cut in ipairs(tags.vars) do
-			tags.re_line({ tags.indent .. symbol.SymbolKind.v[2] .. cut.name }, cut.filename, cut.line, "sg_v")
+			tags.re_line({ tags.indent .. symbol.SymbolKind.v[2] .. cut.name, cut.name }, cut.filename, cut.line, "sg_v")
 		end
 	end
 end
@@ -262,7 +233,7 @@ function tags.parse_func()
 		end
 
 		for _, cut in ipairs(tags.functions) do
-			tags.re_line({ tags.indent .. symbol.SymbolKind.f[2] .. cut.name .. cut.signature .. cut.type }, cut.filename, cut.line, "sg_f")
+			tags.re_line({ tags.indent .. symbol.SymbolKind.f[2] .. cut.name .. cut.signature .. cut.type, cut.name }, cut.filename, cut.line, "sg_f")
 		end
 	end
 end
@@ -288,7 +259,7 @@ function tags.parse_interface()
 					break
 				else
 					table.insert(i_methods, {
-						{ string.format("%s%s%s%s %s", tags.indent, symbol.SymbolKind.m[2][1], cut.name, cut.signature, cut.type) },
+						{ string.format("%s%s%s%s %s", tags.indent, symbol.SymbolKind.m[2][1], cut.name, cut.signature, cut.type), cut.name },
 						cut.filename,
 						cut.line,
 						"sg_m_1"
@@ -333,7 +304,7 @@ function tags.parse_c_t_m()
 		for _, fcut in ipairs(tags.current_file_s_fields) do
 			if fcut.ctype == tcut.name then
 				if show_members == true then
-					table.insert(members, { { string.format("%s%s%s %s", tags.indent, symbol.SymbolKind.w[2], fcut.name, fcut.type) }, fcut.filename, fcut.line, "sg_w" })
+					table.insert(members, { { string.format("%s%s%s %s", tags.indent, symbol.SymbolKind.w[2], fcut.name, fcut.type), fcut.name }, fcut.filename, fcut.line, "sg_w" })
 				else
 					exists_members = true
 					break
@@ -349,7 +320,7 @@ function tags.parse_c_t_m()
 		for _, mcut in ipairs(tags.current_file_methods) do
 			if mcut.ctype == tcut.name then
 				if show_members == true then
-					table.insert(members, { { string.format("%s%s%s%s %s", tags.indent, symbol.SymbolKind.m[2][1], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_1" })
+					table.insert(members, { { string.format("%s%s%s%s %s", tags.indent, symbol.SymbolKind.m[2][1], mcut.name, mcut.signature, mcut.type), mcut.name }, mcut.filename, mcut.line, "sg_m_1" })
 				else
 					exists_members = true
 					break
@@ -368,7 +339,7 @@ function tags.parse_c_t_m()
 		for _, mcut in ipairs(tags.others_file_method) do
 			if mcut.ctype == tcut.name then
 				if show_members == true then
-					table.insert(members, { { string.format("%s%s%s%s %s", tags.indent, symbol.SymbolKind.m[2][2], mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, "sg_m_2" })
+					table.insert(members, { { string.format("%s%s%s%s %s", tags.indent, symbol.SymbolKind.m[2][2], mcut.name, mcut.signature, mcut.type), mcut.name }, mcut.filename, mcut.line, "sg_m_2" })
 				else
 					exists_members = true
 					break
@@ -487,13 +458,13 @@ function tags.parse_c_m_t()
 		if show_members == true then
 			for index, mcut in ipairs(methods) do
 				local hl = "sg_m_1"
-				local icon = symbol.SymbolKind.m[2][1]
+				icon = symbol.SymbolKind.m[2][1]
 				if index > others_method_start_index - 1 then
 					hl   = "sg_m_2"
 					icon = symbol.SymbolKind.m[2][2]
 				end
 
-				tags.re_line({ string.format("%s%s%s%s %s", tags.indent, icon, mcut.name, mcut.signature, mcut.type) }, mcut.filename, mcut.line, hl)
+				tags.re_line({ string.format("%s%s%s%s %s", tags.indent, icon, mcut.name, mcut.signature, mcut.type), mcut.name }, mcut.filename, mcut.line, hl)
 			end
 		end
 
@@ -508,8 +479,10 @@ function tags.jump(line)
 			vim.cmd("e " .. tags.lines.fullnames[line])
 		end
 		if jump_line ~= 0 then
-			vim.cmd("execute  \"normal! " .. jump_line .. "G;zz\"")
-			vim.cmd("execute  \"normal! zz\"")
+			local name = tags.lines.names[line][2]
+			local pattern = string.format("\\%%%dl%s\\C", jump_line, name)
+			vim.fn.search(pattern)
+			vim.fn.execute("normal zz")
 		end
 	end
 end
@@ -526,24 +499,14 @@ end
 
 function tags.show_others_methods()
 	tags.hide_others_method_status = false
-	tags.flushToWindow()
+	tags.flush_to_bufs()
 end
 
 function tags.hide_others_methods()
 	tags.hide_others_method_status = true
-	tags.flushToWindow()
+	tags.flush_to_bufs()
 end
 
-function tags.refresh()
-	local buf = vim.api.nvim_get_current_buf()
-	local buf_name = vim.api.nvim_buf_get_name(buf)
-	if buf_name ~= tags.current_buff_fullname then
-		tags.init()
-		w.buff = buf
-		local file_path = tags.get_current_buff_path()
-		tags.generate(file_path)
-	end
-end
 
 function tags.update_fold_status(data)
 	if tags.fold_status[tags.current_buff_fullname] == nil then
@@ -569,7 +532,7 @@ function tags.fold_toggle()
 
 	tags.fold_status[tags.current_buff_fullname][cursor_symbol] = not tags.fold_status[tags.current_buff_fullname][cursor_symbol]
 	tags.lines                                                  = { names = {}, lines = {}, lines_reverse = {}, fullnames = {}, highlights = {} }
-	tags.flushToWindow()
+	tags.flush_to_bufs()
 	vim.cmd("execute  \"normal! " .. line .. "G;zz\"")
 
 end
