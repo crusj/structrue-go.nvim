@@ -43,11 +43,13 @@ function sg.open()
 	tags.current_buff_name = string.sub(tags.current_buff_fullname, #file_path + 2)
 end
 
+-- bind global kemmap.
 function sg.global_key_bind()
 	vim.api.nvim_set_keymap("n", config.keymap.toggle, ":lua require'structrue-go'.toggle()<cr>", { silent = true })
 	vim.api.nvim_set_keymap("n", config.keymap.preview_close, ":lua require'structrue-go'.preview_close()<cr>", { silent = true })
 end
 
+-- create autocmd.
 function sg.auto_cmd()
 	vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
 		callback = function()
@@ -72,8 +74,12 @@ function sg.auto_cmd()
 	vim.api.nvim_create_autocmd({ "BufWinLeave" }, {
 		callback = function()
 			local t = vim.api.nvim_buf_get_option(0, "filetype")
+			-- print("bufwin leave")
 			if t == "structrue-go" then
 				hl.hl_line = nil
+				if w.bufsw ~= nil and vim.api.nvim_win_is_valid(w.bufsw) then
+					vim.api.nvim_win_close(w.bufsw, true)
+				end
 				w.bufsw = nil
 				hl.stop_hl_cls()
 			end
@@ -100,6 +106,7 @@ function sg.auto_cmd()
 	})
 end
 
+-- highlight buffer's symbol in structrue-go.
 function sg.hl_buff_line()
 	if hl.hl_line ~= nil then
 		vim.api.nvim_buf_clear_highlight(tonumber(w.bufs), ns["sg_cls"], hl.hl_line - 1, hl.hl_line)
@@ -112,6 +119,7 @@ function sg.hl_buff_line()
 	end
 end
 
+-- generate symbols.
 function sg.generate(path, type)
 	if not env.install_gotags then
 		vim.notify("Miss gotags or not in PATH", vim.log.levels.ERROR)
@@ -120,8 +128,8 @@ function sg.generate(path, type)
 
 	local gofiles = path .. env.path_sep .. "*.go"
 	vim.fn.jobstart("gotags " .. gofiles, {
-		on_stdout = function(id, data, name)
-			for index, line in pairs(data) do
+		on_stdout = function(_, data)
+			for _, line in pairs(data) do
 				if line == "" or string.sub(line, 1, 1) == "!" then
 					goto continue
 				end
@@ -135,6 +143,7 @@ function sg.generate(path, type)
 	})
 end
 
+-- generated symbols callback.
 function sg.generate_finish(type)
 	tags.flush_to_bufs()
 	w.attach_structrue_window()
@@ -145,7 +154,7 @@ function sg.generate_finish(type)
 	end
 end
 
--- close
+-- close structrue-go window.
 function sg.close()
 	if w.bufsw ~= nil and vim.api.nvim_win_is_valid(w.bufsw) then
 		vim.api.nvim_win_close(w.bufsw, true)
@@ -154,7 +163,7 @@ function sg.close()
 	w.bufsw = nil
 end
 
--- toggle
+-- toggle.
 function sg.toggle()
 	if w.bufsw == nil then
 		sg.open()
@@ -164,6 +173,7 @@ function sg.toggle()
 
 end
 
+-- refresh buffer symbols structure.
 function sg.refresh()
 	local buff = w.buff
 	tags.init()
@@ -171,29 +181,32 @@ function sg.refresh()
 	sg.generate(tags.get_current_buff_path(), "refresh")
 end
 
--- jump from symbols
+-- jump from symbol.
 function sg.jump()
 	local line = vim.api.nvim_exec("echo line('.')", true)
 	tags.jump(tonumber(line))
 end
 
+-- hide.
 function sg.hide_others_methods_toggle()
 	tags.hide_others_methods_toggle()
 end
 
+-- fold toggle.
 function sg.fold_toggle()
 	tags.fold_toggle()
 end
 
+-- open symbol preview.
 function sg.preview_open()
 	local line = vim.fn.line(".")
-
 	local buff_line = tags.lines.lines[line]
-
 	local name = tags.lines.names[tonumber(line)][2]
+
 	w.preview_open(buff_line, name)
 end
 
+-- close symbol preview.
 function sg.preview_close()
 	w.preview_close()
 end

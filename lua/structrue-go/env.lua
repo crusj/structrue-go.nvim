@@ -12,6 +12,7 @@ function e.setup()
 	e.check_gotags()
 end
 
+-- get os info.
 function e.get_info()
 	local os_name = vim.loop.os_uname().sysname
 	e.is_windows = os_name == "Windows" or os_name == "Windows_NT"
@@ -21,6 +22,7 @@ function e.get_info()
 	end
 end
 
+-- check gotags is exists.
 function e.check_gotags()
 	for _, path in ipairs(os.getenv("PATH"):split(e.env_sep)) do
 		if vim.loop.fs_stat(path..e.path_sep.."gotags") then

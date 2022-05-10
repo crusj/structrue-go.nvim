@@ -98,7 +98,7 @@ function w.preview_open(buf_line, name)
 	vim.fn.search(pattern)
 	vim.fn.execute("normal zz")
 
-	vim.api.nvim_buf_set_option(w.buff, "modifiable", true)
+	vim.api.nvim_buf_set_option(w.buff, "modifiable", false)
 end
 
 function w.preview_close()
@@ -109,6 +109,7 @@ function w.preview_close()
 	w.previeww = nil
 end
 
+-- buff keymaps.
 function w.buf_key_binds()
 	vim.api.nvim_buf_set_keymap(w.bufs, "n", config.keymap.symbol_jump, ":lua require'structrue-go'.jump()<cr>", { silent = true })
 	vim.api.nvim_buf_set_keymap(w.bufs, "n", config.keymap.show_others_method_toggle, ":lua require'structrue-go'.hide_others_methods_toggle()<cr>", { silent = true })

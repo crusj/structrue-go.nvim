@@ -1,5 +1,4 @@
 local symbol = require('structrue-go.symbol')
-local env = require("structrue-go.env")
 local ns = require("structrue-go.namespace")
 local w = require("structrue-go.window")
 
@@ -7,7 +6,8 @@ local tags = {
 	fold_status = {},
 	indent = "\t"
 }
-local config = {}
+
+local config
 
 function tags.setup()
 	config = require("structrue-go.config").get_data()
@@ -38,11 +38,13 @@ function tags.init()
 	tags.open_status               = true -- sg is open?
 end
 
+-- get file path include.
 function tags.get_current_buff_path()
 	tags.current_buff_fullname = vim.api.nvim_buf_get_name(tonumber(w.buff))
 	return (string.gsub(tags.current_buff_fullname, "/[^/]+$", ""))
 end
 
+-- record line data.
 function tags.re_line(name, fullname, line, highlight)
 	tags.lines.names[#tags.lines.names + 1] = name
 	tags.lines.fullnames[#tags.lines.fullnames + 1] = fullname
@@ -87,7 +89,7 @@ function tags:group(cut)
 	end
 end
 
--- write symbols to window.
+-- write symbols to buff.
 function tags.flush_to_bufs()
 	w.create_buf()
 
@@ -122,6 +124,7 @@ function tags.flush_to_bufs()
 	vim.api.nvim_buf_set_option(w.bufs, "modifiable", false)
 end
 
+-- flush symbols to structrue-go window.
 function tags.set_symbols_to_buf()
 	vim.api.nvim_buf_set_lines(w.bufs, 0, -1, false, {})
 	local names = {}
@@ -131,6 +134,7 @@ function tags.set_symbols_to_buf()
 	vim.api.nvim_buf_set_lines(w.bufs, 0, #names, false, names)
 end
 
+-- highlight structrue-go lines.
 function tags.highlight_lines()
 	for index, hl in ipairs(tags.lines.highlights) do
 		vim.api.nvim_buf_add_highlight(w.bufs, ns[hl], hl, index - 1, 3, -1)
@@ -286,7 +290,7 @@ function tags.parse_interface()
 	end
 end
 
--- current file type and methods
+-- current file type and methods.
 function tags.parse_c_t_m()
 	for _, tcut in ipairs(tags.current_file_types) do
 		if tags.fold_status[tags.current_buff_fullname][tcut.name] == nil then
