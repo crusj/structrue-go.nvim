@@ -30,6 +30,7 @@ I use some plugins that reflect the file struct, they support many languages, bu
 
 <img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature5-min.png" width="850">
 
+
 **Float support**
 
 ```config.position = "float"```
@@ -142,6 +143,7 @@ require"structrue-go".setup({
 		toggle = "<leader>m", -- toggle structure-go window
 		show_others_method_toggle = "H", -- show or hidden the methods of struct whose not in current file
 		symbol_jump = "<CR>", -- jump to then symbol file under cursor
+		center_symbol = "\\f", -- Center the highlighted symbol
 		fold_toggle = "\\z",
 		refresh = "R" -- refresh symbols
 		preview_open = "P", -- preview  symbol context open
@@ -162,14 +164,14 @@ require"structrue-go".setup({
 ### Description
 
 | Keymap                   | Action                                                                 | Description                                                   | 
-| -------------------------|------------------------------------------------------------------------|---------------------------------------------------------------| 
-| ```<leader>m```          |  ```:lua require'structrue-go'.toggle()```                             | Toggle structure-go                                           |
-|                          |  ```:lua require'structrue-go'.close()```                              | Close structrue-go                                            |
+|  ----------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------- |
+|          ```<leader>m``` |                ```:lua require'structrue-go'.toggle()```                 | Toggle structure-go                                             |
+|                          |               ```:lua require'structrue-go'.close()```                 | Close structrue-go                                              |
 |                          |  ```:lua require'structrue-go'.open()```                               | Open structrue-go                                             |
 | ```H```                  |  ```:lua require'structrue-go'.hide_others_methods_toggle()```         | Show or hidden the methods of struct whose not in current file|
 | ```<CR>```               |  ```:lua require'structrue-go'.jump()```                               | Jump to the symbol file under cursor                          |
 | ```R```                  |  ```:lua require'structrue-go'.refresh()```                            | Refresh symbols                                               |
 | ```<leader>z```          |  ```:lua require'structrue-go'.fold_toggle()```                        | Toggle fold                                                   |
-| ```P```                  |  ```:lua require'structrue-go'.preview_open()```                       | Preview symbol context                                        |
-| ```\p```                 |  ```:lua require'structrue-go'.preview_close()```                      | Close preview symbol context                                  |
-
+| ```P```                  |            ```:lua require'structrue-go'.preview_open()```             | Preview symbol context                                        |
+| ```\p```                 |            ```:lua require'structrue-go'.preview_close()```            | Close preview symbol context                                  |
+| ```<leader>f```          |            ```:lua require'structrue-go'.visit_symbol()```             | Center the highlighted symbol                                 |

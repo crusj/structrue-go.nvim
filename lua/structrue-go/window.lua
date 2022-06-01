@@ -109,6 +109,12 @@ function w.preview_close()
 	w.previeww = nil
 end
 
+function w.visit_symbol()
+	if w.previeww ~= nil and vim.api.nvim_win_is_valid(w.previeww) then
+
+	end
+end
+
 -- buff keymaps.
 function w.buf_key_binds()
 	vim.api.nvim_buf_set_keymap(w.bufs, "n", config.keymap.symbol_jump, ":lua require'structrue-go'.jump()<cr>", { silent = true })

@@ -47,6 +47,7 @@ end
 function sg.global_key_bind()
 	vim.api.nvim_set_keymap("n", config.keymap.toggle, ":lua require'structrue-go'.toggle()<cr>", { silent = true })
 	vim.api.nvim_set_keymap("n", config.keymap.preview_close, ":lua require'structrue-go'.preview_close()<cr>", { silent = true })
+	vim.api.nvim_set_keymap("n", config.keymap.center_symbol, ":lua require'structrue-go'.center_symbol()<cr>", { silent = true })
 end
 
 -- create autocmd.
@@ -74,7 +75,6 @@ function sg.auto_cmd()
 	vim.api.nvim_create_autocmd({ "BufWinLeave" }, {
 		callback = function()
 			local t = vim.api.nvim_buf_get_option(0, "filetype")
-			-- print("bufwin leave")
 			if t == "structrue-go" then
 				hl.hl_line = nil
 				if w.bufsw ~= nil and vim.api.nvim_win_is_valid(w.bufsw) then
@@ -209,6 +209,15 @@ end
 -- close symbol preview.
 function sg.preview_close()
 	w.preview_close()
+end
+
+-- Center the highlighted symbol
+function sg.center_symbol()
+	local t = vim.api.nvim_buf_get_option(0, "filetype")
+	if t ~= "go" then
+		return
+	end
+	hl.center_symbol()
 end
 
 return sg

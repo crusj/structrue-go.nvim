@@ -42,7 +42,6 @@ function hl.start_hl_cls()
 
 	hl.cls_timer = vim.loop.new_timer()
 	hl.cls_timer:start(0, 1000, vim.schedule_wrap(function()
-		-- vim.notify(os.time() .. "", vim.log.levels.INFO, {})
 		if vim.api.nvim_buf_get_option(0, "filetype") == "go" then
 			if tags.open_status == nil or tags.open_status == false then
 				return
@@ -95,6 +94,23 @@ function hl.get_bufs_hl_line(buff_line)
 	end
 
 	return hl_line
+end
+
+function hl.center_symbol()
+	local cw = vim.api.nvim_get_current_win()
+	if w.bufsw  ~= nil and vim.api.nvim_win_is_valid(w.bufsw) then
+		if cw == w.bufsw then
+			return
+		end
+
+		local bl = hl.get_bufs_hl_line(vim.fn.line("."))
+		if bl ~= nil then
+			vim.api.nvim_set_current_win(w.bufsw)
+			vim.fn.execute("normal! "..bl.."G")
+			vim.fn.execute("normal! zz")
+			vim.api.nvim_set_current_win(cw)
+		end
+	end
 end
 
 return hl
