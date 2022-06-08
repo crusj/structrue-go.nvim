@@ -7,8 +7,8 @@ local w = require("structrue-go.window")
 local ns = require("structrue-go.namespace")
 
 local sg = {}
-
 local config = {}
+
 function sg.setup(user_config)
 	c.setup(user_config)
 	config = require("structrue-go.config").get_data()

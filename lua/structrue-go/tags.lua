@@ -49,7 +49,11 @@ function tags.re_line(name, fullname, line, highlight)
 	tags.lines.names[#tags.lines.names + 1] = name
 	tags.lines.fullnames[#tags.lines.fullnames + 1] = fullname
 	tags.lines.lines[#tags.lines.lines + 1] = line
-	tags.lines.lines_reverse[line] = #tags.lines.lines
+
+	if highlight ~= "sg_m_2" then
+		tags.lines.lines_reverse[line] = #tags.lines.lines
+	end
+
 	tags.lines.highlights[#tags.lines.highlights + 1] = highlight
 
 end
@@ -343,7 +347,12 @@ function tags.parse_c_t_m()
 		for _, mcut in ipairs(tags.others_file_method) do
 			if mcut.ctype == tcut.name then
 				if show_members == true then
-					table.insert(members, { { string.format("%s%s%s%s %s", tags.indent, symbol.SymbolKind.m[2][2], mcut.name, mcut.signature, mcut.type), mcut.name }, mcut.filename, mcut.line, "sg_m_2" })
+					table.insert(members, {
+						{ string.format("%s%s%s%s %s", tags.indent, symbol.SymbolKind.m[2][2], mcut.name, mcut.signature, mcut.type), mcut.name },
+						mcut.filename,
+						mcut.line,
+						"sg_m_2",
+					})
 				else
 					exists_members = true
 					break
@@ -371,7 +380,7 @@ function tags.parse_c_t_m()
 		tags.re_line({ name, tcut.name }, tcut.filename, tcut.line, "sg_t")
 
 		for _, item in ipairs(members) do
-			tags.re_line(item[1], item[2], item[3], item[4])
+			tags.re_line(item[1], item[2], item[3], item[4], item[5])
 		end
 	end
 end
@@ -477,14 +486,16 @@ end
 
 function tags.jump(line)
 	local jump_line = tags.lines.lines[line]
+	local name = tags.lines.names[line][2]
+	local pattern = string.format("\\%%%dl%s\\C", jump_line, name)
+
 	if tags.lines.fullnames[line] ~= "" then
 		vim.api.nvim_set_current_win(w.bufw)
 		if tags.lines.fullnames[line] ~= tags.current_buff_fullname then
 			vim.cmd("e " .. tags.lines.fullnames[line])
 		end
+
 		if jump_line ~= 0 then
-			local name = tags.lines.names[line][2]
-			local pattern = string.format("\\%%%dl%s\\C", jump_line, name)
 			vim.fn.search(pattern)
 			vim.fn.execute("normal zz")
 		end
@@ -510,7 +521,6 @@ function tags.hide_others_methods()
 	tags.hide_others_method_status = true
 	tags.flush_to_bufs()
 end
-
 
 function tags.update_fold_status(data)
 	if tags.fold_status[tags.current_buff_fullname] == nil then
