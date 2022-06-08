@@ -174,4 +174,4 @@ require"structrue-go".setup({
 | ```<leader>z```          |  ```:lua require'structrue-go'.fold_toggle()```                        | Toggle fold                                                   |
 | ```P```                  |            ```:lua require'structrue-go'.preview_open()```             | Preview symbol context                                        |
 | ```\p```                 |            ```:lua require'structrue-go'.preview_close()```            | Close preview symbol context                                  |
-| ```<leader>f```          |            ```:lua require'structrue-go'.visit_symbol()```             | Center the highlighted symbol                                 |
+| ```<leader>f```          |            ```:lua require'structrue-go'.center_symbol()```             | Center the highlighted symbol                                 |
