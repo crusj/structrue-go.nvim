@@ -46,8 +46,10 @@ end
 -- bind global kemmap.
 function sg.global_key_bind()
 	vim.api.nvim_set_keymap("n", config.keymap.toggle, ":lua require'structrue-go'.toggle()<cr>", { silent = true })
-	vim.api.nvim_set_keymap("n", config.keymap.preview_close, ":lua require'structrue-go'.preview_close()<cr>", { silent = true })
-	vim.api.nvim_set_keymap("n", config.keymap.center_symbol, ":lua require'structrue-go'.center_symbol()<cr>", { silent = true })
+	vim.api.nvim_set_keymap("n", config.keymap.preview_close, ":lua require'structrue-go'.preview_close()<cr>",
+		{ silent = true })
+	vim.api.nvim_set_keymap("n", config.keymap.center_symbol, ":lua require'structrue-go'.center_symbol()<cr>",
+		{ silent = true })
 end
 
 -- create autocmd.
@@ -161,6 +163,7 @@ function sg.close()
 	end
 
 	w.bufsw = nil
+	hl.stop_hl_cls()
 end
 
 -- toggle.
