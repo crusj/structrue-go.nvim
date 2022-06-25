@@ -145,7 +145,7 @@ require"structrue-go".setup({
 		symbol_jump = "<CR>", -- jump to then symbol file under cursor
 		center_symbol = "\\f", -- Center the highlighted symbol
 		fold_toggle = "\\z",
-		refresh = "R" -- refresh symbols
+		refresh = "R", -- refresh symbols
 		preview_open = "P", -- preview  symbol context open
 		preview_close = "\\p" -- preview  symbol context close
 	},
