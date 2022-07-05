@@ -1,8 +1,8 @@
 # structrue-go.nvim
-A better structured display of golang symbol information
+A more intuitive display of the symbol structure of golang files.
 
 ## Description
-I use some plugins that reflect the file struct, they support many languages, but they can't be implemented well in golang, especially in struct and method. Because if a struct has many methods and you don't want the file to be too large,  the struct and the methods belonging to it can be in different files. I hope to create a plugin like goland structure that can show or hide the methods in the structure that are not in the current file.
+Fast, asynchronous, intuitive, collapsible, automatic and more.
 
 ## Demo
 
@@ -90,54 +90,54 @@ require"structrue-go".setup({
 	indent = "┠",  -- Hierarchical indent icon, nil or empty will be a tab
 	position = "botright", -- window position,default botright,also can set float
 	symbol = { -- symbol style
-		filename = {
-			hl = "guifg=Black", -- highlight symbol,value can set by help highlight-gui
-			icon = " " -- symbol icon
-		},
-		package = {
-			hl = "guifg=Red",
-			icon = "⊞ "
-		},
-		import = {
-			hl = "guifg=Grey",
-			icon = "⌬ "
-		},
-		const = {
-			hl = "guifg=Orange",
-			icon = "π ",
-		},
-		variable = {
-			hl = "guifg=Magenta",
-			icon = "◈ ",
-		},
-		func = {
-			hl = "guifg=DarkBlue",
-			icon = "◧ ",
-		},
-		interface = {
-			hl = "guifg=Green",
-			icon = "❙ "
-		},
-		type = {
-			hl = "guifg=Purple",
-			icon = "▱ ",
-		},
-		struct = {
-			hl = "guifg=Purple",
-			icon = "❏ ",
-		},
-		field = {
-			hl = "guifg=DarkYellow",
-			icon = "▪ "
-		},
-		method_current = {
-			hl = "guifg=DarkGreen",
-			icon = "◨ "
-		},
-		method_others = {
-			hl = "guifg=LightGreen",
-			icon = "◨ "
-		},
+        filename = {
+            hl = "guifg=#0096C7", -- highlight symbol
+            icon = " " -- symbol icon
+        },
+        package = {
+            hl = "guifg=#0096C7",
+            icon = " "
+        },
+        import = {
+            hl = "guifg=#0096C7",
+            icon = "{} "
+        },
+        const = {
+            hl = "guifg=#E44755",
+            icon = "π ",
+        },
+        variable = {
+            hl = "guifg=#52A5A2",
+            icon = "◈ ",
+        },
+        func = {
+            hl = "guifg=#CEB996",
+            icon = " ",
+        },
+        interface = {
+            hl = "guifg=#00B4D8",
+            icon = "❙ "
+        },
+        type = {
+            hl = "guifg=#00B4D8",
+            icon = "▱ ",
+        },
+        struct = {
+            hl = "guifg=#00B4D8",
+            icon = "❏ ",
+        },
+        field = {
+            hl = "guifg=#CEB996",
+            icon = "▪ "
+        },
+        method_current = {
+            hl = "guifg=#CEB996",
+            icon = "ƒ "
+        },
+        method_others = {
+            hl = "guifg=#CEB996",
+            icon = " "
+        },
 	},
 	keymap = {
 		toggle = "<leader>m", -- toggle structure-go window
