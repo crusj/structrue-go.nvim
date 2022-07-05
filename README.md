@@ -2,49 +2,27 @@
 A more intuitive display of the symbol structure of golang files.
 
 ## Description
-Fast, asynchronous, intuitive, collapsible, automatic and more.
-
-## Demo
-
-[video demo](https://youtu.be/ePg0UYjWyHU)
-
-## Features
-
-**Categorize symbols and show hierarchical relationships**
-
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature1-min.png" width="850">
-
-**Jump from symbols and highlight the corresponding symbol under the cursor line**
-
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature2-min.png" width="850">
-
-**Toggle methods of struct whose not in current file and hl them**
-
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature3-1-min.png" width="400" height="705"> <img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature3-2-min.png" width="400" height="705">
-
-**Able to fold imports、const、var、func、type、interface and always remember folding state even when switching files**
-
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature4-1-min.png" width="400" height="705"> <img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature4-2-min.png" width="400" height="705">
-
-**Preview**
-
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature5-min.png" width="850">
+Fast, asynchronous, intuitive, collapsible, automatic, show all methods even if they are not in the same file as the corresponding type and more.
 
 
-**Float support**
+## Screenshots
 
-```config.position = "float"```
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature6-min.png" width="850">
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/01-min.png" width="850">
 
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/02-min.png" width="850">
 
-**Configurable highlights, icons, shortcuts**
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/03-min.png" width="850">
+
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/04-min.png" width="850">
+
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/05-min.png" width="850">
 
 
 ## Install 
 
 ### Requirement
 
-**neovim0.7**
+**neovim >= 0.7**
 
 **gotags**
 
@@ -52,9 +30,11 @@ Fast, asynchronous, intuitive, collapsible, automatic and more.
 go get -u github.com/jstemmer/gotags
 ```
 
-### Install
+### Installation
 
-**Packer**
+**Use your favorite package management tool**
+
+**With Packer**
 
 ```lua
 use {
