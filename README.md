@@ -141,7 +141,7 @@ require"structrue-go".setup({
 
 ```
 
-### Description
+### keymap
 
 | Keymap                   | Action                                                                 | Description                                                   | 
 |  ----------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------- |
@@ -155,3 +155,7 @@ require"structrue-go".setup({
 | ```P```                  |            ```:lua require'structrue-go'.preview_open()```             | Preview symbol context                                        |
 | ```\p```                 |            ```:lua require'structrue-go'.preview_close()```            | Close preview symbol context                                  |
 | ```<leader>f```          |            ```:lua require'structrue-go'.center_symbol()```             | Center the highlighted symbol                                 |
+
+### Thanks
+
+<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo (Main) logo." width="100">
