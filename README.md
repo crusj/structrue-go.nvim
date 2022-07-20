@@ -156,6 +156,6 @@ require"structrue-go".setup({
 | ```\p```                 |            ```:lua require'structrue-go'.preview_close()```            | Close preview symbol context                                  |
 | ```<leader>f```          |            ```:lua require'structrue-go'.center_symbol()```             | Center the highlighted symbol                                 |
 
-### Thanks
+## Thanks
 
-<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo (Main) logo." width="100">
+<a href="https://www.jetbrains.com/"><img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo (Main) logo." width="100"></a>
