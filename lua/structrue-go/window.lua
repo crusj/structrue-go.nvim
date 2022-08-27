@@ -1,4 +1,3 @@
-local ns = require("structrue-go.namespace")
 local w = {
 	buff = nil,
 	bufw = nil,
@@ -97,7 +96,6 @@ function w.preview_open(buf_line, name)
 	local pattern = string.format("\\%%%dl%s\\C", buf_line, name)
 	vim.fn.search(pattern)
 	vim.fn.execute("normal zz")
-
 	vim.api.nvim_buf_set_option(w.buff, "modifiable", false)
 end
 
@@ -107,12 +105,6 @@ function w.preview_close()
 	end
 
 	w.previeww = nil
-end
-
-function w.visit_symbol()
-	if w.previeww ~= nil and vim.api.nvim_win_is_valid(w.previeww) then
-
-	end
 end
 
 -- buff keymaps.

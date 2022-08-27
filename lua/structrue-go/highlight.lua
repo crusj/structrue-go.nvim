@@ -105,10 +105,7 @@ function hl.center_symbol()
 
 		local bl = hl.get_bufs_hl_line(vim.fn.line("."))
 		if bl ~= nil then
-			vim.api.nvim_set_current_win(w.bufsw)
-			vim.fn.execute("normal! "..bl.."G")
-			vim.fn.execute("normal! zz")
-			vim.api.nvim_set_current_win(cw)
+            vim.api.nvim_win_set_cursor(w.bufsw,{bl,0})
 		end
 	end
 end

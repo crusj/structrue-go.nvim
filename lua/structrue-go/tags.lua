@@ -547,8 +547,7 @@ function tags.fold_toggle()
 	tags.fold_status[tags.current_buff_fullname][cursor_symbol] = not tags.fold_status[tags.current_buff_fullname][cursor_symbol]
 	tags.lines                                                  = { names = {}, lines = {}, lines_reverse = {}, fullnames = {}, highlights = {} }
 	tags.flush_to_bufs()
-	vim.cmd("execute  \"normal! " .. line .. "G;zz\"")
-
+    vim.api.nvim_win_set_cursor(0,{line,0})
 end
 
 return tags

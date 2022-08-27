@@ -1,50 +1,28 @@
 # structrue-go.nvim
-A better structured display of golang symbol information
+A more intuitive display of the symbol structure of golang files.
 
 ## Description
-I use some plugins that reflect the file struct, they support many languages, but they can't be implemented well in golang, especially in struct and method. Because if a struct has many methods and you don't want the file to be too large,  the struct and the methods belonging to it can be in different files. I hope to create a plugin like goland structure that can show or hide the methods in the structure that are not in the current file.
-
-## Demo
-
-[video demo](https://youtu.be/ePg0UYjWyHU)
-
-## Features
-
-**Categorize symbols and show hierarchical relationships**
-
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature1-min.png" width="850">
-
-**Jump from symbols and highlight the corresponding symbol under the cursor line**
-
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature2-min.png" width="850">
-
-**Toggle methods of struct whose not in current file and hl them**
-
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature3-1-min.png" width="400" height="705"> <img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature3-2-min.png" width="400" height="705">
-
-**Able to fold imports、const、var、func、type、interface and always remember folding state even when switching files**
-
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature4-1-min.png" width="400" height="705"> <img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature4-2-min.png" width="400" height="705">
-
-**Preview**
-
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature5-min.png" width="850">
+Fast, asynchronous, intuitive, collapsible, automatic, show all methods even if they are not in the same file as the corresponding type and more.
 
 
-**Float support**
+## Screenshots
 
-```config.position = "float"```
-<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/feature6-min.png" width="850">
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/01-min.png" width="850">
 
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/02-min.png" width="850">
 
-**Configurable highlights, icons, shortcuts**
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/03-min.png" width="850">
+
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/04-min.png" width="850">
+
+<img src="https://github.com/crusj/structrue-go.nvim/blob/main/screenshots/05-min.png" width="850">
 
 
 ## Install 
 
 ### Requirement
 
-**neovim0.7**
+**neovim >= 0.7**
 
 **gotags**
 
@@ -52,9 +30,11 @@ I use some plugins that reflect the file struct, they support many languages, bu
 go get -u github.com/jstemmer/gotags
 ```
 
-### Install
+### Installation
 
-**Packer**
+**Use your favorite package management tool**
+
+**With Packer**
 
 ```lua
 use {
@@ -90,54 +70,54 @@ require"structrue-go".setup({
 	indent = "┠",  -- Hierarchical indent icon, nil or empty will be a tab
 	position = "botright", -- window position,default botright,also can set float
 	symbol = { -- symbol style
-		filename = {
-			hl = "guifg=Black", -- highlight symbol,value can set by help highlight-gui
-			icon = " " -- symbol icon
-		},
-		package = {
-			hl = "guifg=Red",
-			icon = "⊞ "
-		},
-		import = {
-			hl = "guifg=Grey",
-			icon = "⌬ "
-		},
-		const = {
-			hl = "guifg=Orange",
-			icon = "π ",
-		},
-		variable = {
-			hl = "guifg=Magenta",
-			icon = "◈ ",
-		},
-		func = {
-			hl = "guifg=DarkBlue",
-			icon = "◧ ",
-		},
-		interface = {
-			hl = "guifg=Green",
-			icon = "❙ "
-		},
-		type = {
-			hl = "guifg=Purple",
-			icon = "▱ ",
-		},
-		struct = {
-			hl = "guifg=Purple",
-			icon = "❏ ",
-		},
-		field = {
-			hl = "guifg=DarkYellow",
-			icon = "▪ "
-		},
-		method_current = {
-			hl = "guifg=DarkGreen",
-			icon = "◨ "
-		},
-		method_others = {
-			hl = "guifg=LightGreen",
-			icon = "◨ "
-		},
+        filename = {
+            hl = "guifg=#0096C7", -- highlight symbol
+            icon = " " -- symbol icon
+        },
+        package = {
+            hl = "guifg=#0096C7",
+            icon = " "
+        },
+        import = {
+            hl = "guifg=#0096C7",
+            icon = "{} "
+        },
+        const = {
+            hl = "guifg=#E44755",
+            icon = "π ",
+        },
+        variable = {
+            hl = "guifg=#52A5A2",
+            icon = "◈ ",
+        },
+        func = {
+            hl = "guifg=#CEB996",
+            icon = " ",
+        },
+        interface = {
+            hl = "guifg=#00B4D8",
+            icon = "❙ "
+        },
+        type = {
+            hl = "guifg=#00B4D8",
+            icon = "▱ ",
+        },
+        struct = {
+            hl = "guifg=#00B4D8",
+            icon = "❏ ",
+        },
+        field = {
+            hl = "guifg=#CEB996",
+            icon = "▪ "
+        },
+        method_current = {
+            hl = "guifg=#CEB996",
+            icon = "ƒ "
+        },
+        method_others = {
+            hl = "guifg=#CEB996",
+            icon = " "
+        },
 	},
 	keymap = {
 		toggle = "<leader>m", -- toggle structure-go window
@@ -145,7 +125,7 @@ require"structrue-go".setup({
 		symbol_jump = "<CR>", -- jump to then symbol file under cursor
 		center_symbol = "\\f", -- Center the highlighted symbol
 		fold_toggle = "\\z",
-		refresh = "R" -- refresh symbols
+		refresh = "R", -- refresh symbols
 		preview_open = "P", -- preview  symbol context open
 		preview_close = "\\p" -- preview  symbol context close
 	},
@@ -161,7 +141,7 @@ require"structrue-go".setup({
 
 ```
 
-### Description
+### keymap
 
 | Keymap                   | Action                                                                 | Description                                                   | 
 |  ----------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------- |
@@ -175,3 +155,7 @@ require"structrue-go".setup({
 | ```P```                  |            ```:lua require'structrue-go'.preview_open()```             | Preview symbol context                                        |
 | ```\p```                 |            ```:lua require'structrue-go'.preview_close()```            | Close preview symbol context                                  |
 | ```<leader>f```          |            ```:lua require'structrue-go'.center_symbol()```             | Center the highlighted symbol                                 |
+
+## Thanks
+
+<a href="https://www.jetbrains.com/"><img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo (Main) logo." width="100"></a>

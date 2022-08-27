@@ -13,52 +13,52 @@ function config.setup(user_config)
 		position = "botright", -- window position,default botright,also can set float
 		symbol = { -- symbol style
 			filename = {
-				hl = "guifg=Black", -- highlight symbol
+				hl = "guifg=#0096C7", -- highlight symbol
 				icon = " " -- symbol icon
 			},
 			package = {
-				hl = "guifg=Red",
-				icon = "⊞ "
+				hl = "guifg=#0096C7",
+				icon = " "
 			},
 			import = {
-				hl = "guifg=Grey",
-				icon = "⌬ "
+				hl = "guifg=#0096C7",
+				icon = "{} "
 			},
 			const = {
-				hl = "guifg=Orange",
+				hl = "guifg=#E44755",
 				icon = "π ",
 			},
 			variable = {
-				hl = "guifg=Magenta",
+				hl = "guifg=#52A5A2",
 				icon = "◈ ",
 			},
 			func = {
-				hl = "guifg=DarkBlue",
-				icon = "◧ ",
+				hl = "guifg=#CEB996",
+				icon = " ",
 			},
 			interface = {
-				hl = "guifg=Green",
+				hl = "guifg=#00B4D8",
 				icon = "❙ "
 			},
 			type = {
-				hl = "guifg=Purple",
+				hl = "guifg=#00B4D8",
 				icon = "▱ ",
 			},
 			struct = {
-				hl = "guifg=Purple",
+				hl = "guifg=#00B4D8",
 				icon = "❏ ",
 			},
 			field = {
-				hl = "guifg=DarkYellow",
+				hl = "guifg=#CEB996",
 				icon = "▪ "
 			},
 			method_current = {
-				hl = "guifg=DarkGreen",
-				icon = "◨ "
+				hl = "guifg=#CEB996",
+				icon = "ƒ "
 			},
 			method_others = {
-				hl = "guifg=LightGreen",
-				icon = "◨ "
+				hl = "guifg=#CEB996",
+				icon = " "
 			},
 		},
 		keymap = {
