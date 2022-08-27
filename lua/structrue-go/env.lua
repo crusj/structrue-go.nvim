@@ -24,7 +24,7 @@ end
 
 -- check gotags is exists.
 function e.check_gotags()
-	for _, path in ipairs(os.getenv("PATH"):split(e.env_sep)) do
+	for _, path in ipairs(os.getenv("PATH"):split_s(e.env_sep)) do
 		if vim.loop.fs_stat(path..e.path_sep.."gotags") then
 			e.install_gotags = true
 			return

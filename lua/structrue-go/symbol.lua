@@ -26,7 +26,7 @@ end
 function S.New(tagline)
 	local cuts = {}
 	for cut in string.gmatch(tagline, "%C+") do
-		local sp = cut:split(":")
+		local sp = cut:split_s(":")
 
 		if #sp == 2 then
 			cuts[sp[1]] = sp[2]

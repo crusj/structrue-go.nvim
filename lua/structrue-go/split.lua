@@ -1,5 +1,5 @@
 -- split string by sep
-function string:split(sep)
+function string:split_s(sep)
 	local cuts = {}
 	for v in string.gmatch(self, "[^'" .. sep .. "']+") do
 		table.insert(cuts,v)

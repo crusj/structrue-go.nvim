@@ -5,6 +5,7 @@ local symbol = require("structrue-go.symbol")
 local env = require("structrue-go.env")
 local w = require("structrue-go.window")
 local ns = require("structrue-go.namespace")
+require("structrue-go.split")
 
 local sg = {}
 local config = {}
