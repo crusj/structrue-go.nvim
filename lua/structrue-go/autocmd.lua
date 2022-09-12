@@ -1,6 +1,7 @@
 local M = {
     cmd_win_leave = nil,
-    cmd_win_enter = nil
+    cmd_win_enter = nil,
+    cmd_win_dbclick = nil,
 }
 
 local api = vim.api

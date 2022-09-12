@@ -125,6 +125,7 @@ function sg.generate(path, type)
             -- register autocmd
             cmd.structure_leave(hl, w)
             cmd.structure_win_enter(sg, w)
+            vim.api.nvim_buf_set_keymap(w.bufs,"n","<2-LeftMouse>", "<cmd>lua require'structrue-go'.jump()<cr>",{})
         end
     })
 end
