@@ -96,7 +96,6 @@ function w.preview_open(buf_line, name)
 	local pattern = string.format("\\%%%dl%s\\C", buf_line, name)
 	vim.fn.search(pattern)
 	vim.fn.execute("normal zz")
-	vim.api.nvim_buf_set_option(w.buff, "modifiable", false)
 end
 
 function w.preview_close()
