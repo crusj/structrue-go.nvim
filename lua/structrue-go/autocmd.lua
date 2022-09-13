@@ -34,7 +34,6 @@ function M.structure_win_enter(sg, w)
 
     M.cmd_win_enter = api.nvim_create_autocmd({ "WinEnter" }, {
         callback = function()
-            print("win enter")
             sg.hl_buff_line()
         end,
         buffer = w.bufs
