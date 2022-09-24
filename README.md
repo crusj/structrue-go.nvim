@@ -70,54 +70,55 @@ require"structrue-go".setup({
 	indent = "┠",  -- Hierarchical indent icon, nil or empty will be a tab
 	position = "botright", -- window position,default botright,also can set float
 	symbol = { -- symbol style
-        filename = {
-            hl = "guifg=#0096C7", -- highlight symbol
-            icon = " " -- symbol icon
-        },
-        package = {
-            hl = "guifg=#0096C7",
-            icon = " "
-        },
-        import = {
-            hl = "guifg=#0096C7",
-            icon = "{} "
-        },
-        const = {
-            hl = "guifg=#E44755",
-            icon = "π ",
-        },
-        variable = {
-            hl = "guifg=#52A5A2",
-            icon = "◈ ",
-        },
-        func = {
-            hl = "guifg=#CEB996",
-            icon = " ",
-        },
-        interface = {
-            hl = "guifg=#00B4D8",
-            icon = "❙ "
-        },
-        type = {
-            hl = "guifg=#00B4D8",
-            icon = "▱ ",
-        },
-        struct = {
-            hl = "guifg=#00B4D8",
-            icon = "❏ ",
-        },
-        field = {
-            hl = "guifg=#CEB996",
-            icon = "▪ "
-        },
-        method_current = {
-            hl = "guifg=#CEB996",
-            icon = "ƒ "
-        },
-        method_others = {
-            hl = "guifg=#CEB996",
-            icon = " "
-        },
+		filename = {
+		    hl = "guifg=#0096C7", -- highlight symbol
+		    icon = " " -- symbol icon
+		},
+		package = {
+		    hl = "guifg=#0096C7",
+		    icon = " "
+		},
+		import = {
+		    hl = "guifg=#0096C7",
+		    icon = "{} "
+		},
+		const = {
+		    hl = "guifg=#E44755",
+		    icon = "π ",
+		},
+		variable = {
+		    hl = "guifg=#52A5A2",
+		    icon = "◈ ",
+		},
+		func = {
+		    hl = "guifg=#CEB996",
+		    icon = " ",
+		},
+		interface = {
+		    hl = "guifg=#00B4D8",
+		    icon = "❙ "
+		},
+		type = {
+		    hl = "guifg=#00B4D8",
+		    icon = "▱ ",
+		},
+		struct = {
+		    hl = "guifg=#00B4D8",
+		    icon = "❏ ",
+		},
+		field = {
+		    hl = "guifg=#CEB996",
+		    icon = "▪ "
+		},
+		method_current = {
+		    hl = "guifg=#CEB996",
+		    icon = "ƒ "
+		},
+		method_others = {
+		    hl = "guifg=#CEB996",
+		    icon = " "
+		},
+	},
 	keymap = {
 		toggle = "<leader>m", -- toggle structure-go window
 		show_others_method_toggle = "H", -- show or hidden the methods of struct whose not in current file
