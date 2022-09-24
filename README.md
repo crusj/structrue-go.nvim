@@ -118,7 +118,6 @@ require"structrue-go".setup({
             hl = "guifg=#CEB996",
             icon = " "
         },
-	},
 	keymap = {
 		toggle = "<leader>m", -- toggle structure-go window
 		show_others_method_toggle = "H", -- show or hidden the methods of struct whose not in current file
