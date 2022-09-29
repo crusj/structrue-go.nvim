@@ -166,7 +166,7 @@ function tags.parse_import()
 			fold_icon = config.fold_close_icon
 		end
 
-		tags.re_line({ fold_icon .. "import", "import" }, "", -1, "sg_i")
+		tags.re_line({ fold_icon .. "P import", "import" }, "", -1, "sg_i")
 
 		if tags.fold_status[tags.current_buff_fullname]["import"] == true then
 			return
@@ -189,7 +189,7 @@ function tags.parse_const()
 			fold_icon = config.fold_close_icon
 		end
 
-		tags.re_line({ fold_icon .. "const", "const" }, "", -1, "sg_c")
+		tags.re_line({ fold_icon .. "C const", "const" }, "", -1, "sg_c")
 
 		if tags.fold_status[tags.current_buff_fullname]["const"] == true then
 			return
@@ -212,7 +212,7 @@ function tags.parse_var()
 			fold_icon = config.fold_close_icon
 		end
 
-		tags.re_line({ fold_icon .. "var", "var" }, "", -1, "sg_v")
+		tags.re_line({ fold_icon .. "V var", "var" }, "", -1, "sg_v")
 
 		if tags.fold_status[tags.current_buff_fullname]["var"] == true then
 			return
@@ -234,7 +234,7 @@ function tags.parse_func()
 		if tags.fold_status[tags.current_buff_fullname]["func"] == true then
 			fold_icon = config.fold_close_icon
 		end
-		tags.re_line({ fold_icon .. "func", "func" }, "", -1, "sg_f")
+		tags.re_line({ fold_icon .. "F func", "func" }, "", -1, "sg_f")
 
 		if tags.fold_status[tags.current_buff_fullname]["func"] == true then
 			return
@@ -284,7 +284,7 @@ function tags.parse_interface()
 			i_icon = config.fold_open_icon
 		end
 
-		tags.re_line({ i_icon .. icut.name, icut.name }, icut.filename, icut.line, "sg_n")
+		tags.re_line({ i_icon .."I ".. icut.name, icut.name }, icut.filename, icut.line, "sg_n")
 
 		if show_methods then
 			for _, item in ipairs(i_methods) do
@@ -372,15 +372,15 @@ function tags.parse_c_t_m()
 			icon = config.fold_open_icon
 		end
 
-		local name = icon .. tcut.name
+		local name = icon .. "T ".. tcut.name
 		if tcut.type ~= "struct" then
-			name = string.format("%s%s(%s)", icon, tcut.name, tcut.type)
+			name = string.format("%sT %s(%s)", icon, tcut.name, tcut.type)
 		end
 
 		tags.re_line({ name, tcut.name }, tcut.filename, tcut.line, "sg_t")
 
 		for _, item in ipairs(members) do
-			tags.re_line(item[1], item[2], item[3], item[4], item[5])
+			tags.re_line(item[1], item[2], item[3], item[4])
 		end
 	end
 end

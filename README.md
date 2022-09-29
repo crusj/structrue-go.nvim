@@ -80,19 +80,19 @@ require"structrue-go".setup({
 		},
 		import = {
 		    hl = "guifg=#0096C7",
-		    icon = "{} "
+		    icon = " ◈ "
 		},
 		const = {
 		    hl = "guifg=#E44755",
-		    icon = "π ",
+		    icon = " π ",
 		},
 		variable = {
 		    hl = "guifg=#52A5A2",
-		    icon = "◈ ",
+		    icon = " ◈ ",
 		},
 		func = {
 		    hl = "guifg=#CEB996",
-		    icon = " ",
+		    icon = "  ",
 		},
 		interface = {
 		    hl = "guifg=#00B4D8",
@@ -108,15 +108,15 @@ require"structrue-go".setup({
 		},
 		field = {
 		    hl = "guifg=#CEB996",
-		    icon = "▪ "
+		    icon = " ▪ "
 		},
 		method_current = {
 		    hl = "guifg=#CEB996",
-		    icon = "ƒ "
+		    icon = " ƒ "
 		},
 		method_others = {
 		    hl = "guifg=#CEB996",
-		    icon = " "
+		    icon = "  "
 		},
 	},
 	keymap = {
