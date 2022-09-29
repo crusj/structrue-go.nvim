@@ -196,7 +196,7 @@ function tags.parse_const()
 		end
 
 		for _, cut in ipairs(tags.consts) do
-			tags.re_line({ tags.indent .. symbol.SymbolKind.c[2] .. cut.name, cut.name }, cut.filename, cut.line, "sg_c")
+			tags.re_line({ tags.indent .. symbol.SymbolKind.c[2] .. cut.name.." "..cut.type, cut.name }, cut.filename, cut.line, "sg_c")
 		end
 	end
 end
@@ -219,7 +219,7 @@ function tags.parse_var()
 		end
 
 		for _, cut in ipairs(tags.vars) do
-			tags.re_line({ tags.indent .. symbol.SymbolKind.v[2] .. cut.name, cut.name }, cut.filename, cut.line, "sg_v")
+			tags.re_line({ tags.indent .. symbol.SymbolKind.v[2] .. cut.name.." "..cut.type, cut.name }, cut.filename, cut.line, "sg_v")
 		end
 	end
 end
